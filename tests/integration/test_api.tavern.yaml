@@ -1,0 +1,404 @@
+test_name: Sjekk at punktsøk fungerer
+
+strict:
+  - headers:off
+  - json:on
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/punkt"
+      params:
+        nord: 59.9
+        ost: 10.7
+        koordsys: 4258
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        fylkesnavn: "Oslo"
+        fylkesnummer: "03"
+        kommunenavn: "Oslo"
+        kommunenummer: "0301"
+
+---
+
+
+test_name: fylker-endepunkt, sortering
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker"
+      params:
+        sorter: fylkesnavn
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        - fylkesnavn: "Oslo"
+          fylkesnummer: "03"
+          fylkesnavn: "Møre og Romsdal"
+          fylkesnummer: "15"
+
+---
+
+test_name: check that swagger is responding
+
+strict:
+  - headers:on
+  - json:on
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}"
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+
+---
+
+test_name: Hent ut et enkelt fylke, sorter kommuner
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker/50"
+      params:
+        sorter: kommunenummer
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        avgrensningsboks:
+          crs:
+            properties:
+              name: "EPSG:4258"
+        fylkesnavn: "Trøndelag"
+        fylkesnummer: "50"
+        kommuner:
+          - kommunenummer: "5001"
+            kommunenavn: "Trondheim"
+
+
+---
+
+test_name: fylke-endepunkt, filtrering for returnere kun ett element
+
+strict:
+  - headers:off
+  - json:on
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker/50"
+      params:
+        filtrer: fylkesnummer
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        fylkesnummer: "50"
+
+---
+
+test_name: kommuner
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner"
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        - kommunenavn: "Bodø"
+          kommunenummer: "1804"
+        - kommunenavn: "Guovdageaidnu"
+          kommunenavnNorsk: Kautokeino
+
+---
+
+test_name: Oslo kommune
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/0301"
+      params: {'utkoordsys': 25833}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        avgrensningsboks:
+          type: "Polygon"
+          coordinates:
+            - !anything
+          crs:
+            properties:
+              name: "EPSG:25833"
+        kommunenavn: "Oslo"
+
+
+---
+
+test_name: Kåfjord. 3 skrivemåter. Sjekker alle returparametere.
+
+strict:
+  - headers:off
+  - json:on
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/5426"
+      params:
+        utkoordsys: 4258
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        avgrensningsboks:
+          coordinates:
+            - !anylist
+          crs:
+            properties:
+              name: "EPSG:4258"
+            type: "name"
+          type: "Polygon"
+        kommunenavn: "Gáivuotna"
+        kommunenavnNorsk: "Kåfjord"
+        kommunenummer: "5426"
+        fylkesnummer: "54"
+        fylkesnavn: "Troms og Finnmark"
+        samiskForvaltningsomrade: true
+        gyldigeNavn:
+          - navn: "Gáivuotna"
+            prioritet: 1
+            sprak: "Northern Sami"
+          - navn: "Kåfjord"
+            prioritet: 2
+            sprak: "Norwegian"
+          - navn: "Kaivuono"
+            prioritet: 3
+            sprak: "Kven Finnish"
+        punktIOmrade:
+          coordinates:
+            !anylist
+          type: "Point"
+          crs:
+            properties:
+              name: "EPSG:4258"
+            type: "name"
+
+
+---
+
+test_name: Oslo kommune område
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/0301/omrade"
+      params: {'utkoordsys': 25833}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        omrade:
+          coordinates:
+            -
+              - !anything
+          type: "MultiPolygon"
+          crs:
+            properties:
+              name: "EPSG:25833"
+            type: "name"
+        kommunenavn: "Oslo"
+        kommunenummer: "0301"
+
+
+---
+
+test_name: illustrasjonskart kommuner, sjekk noen kommuner fordi noen av de ble ekskludert tidligere pga problemer med polygonkonstruksjonen
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/illustrasjonskart"
+      params: {'utkoordsys': 25833}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-length: !re_fullmatch "16[4-6]{1}[0-9]{3}"
+      json:
+        type: "FeatureCollection"
+        features:
+          - properties:
+              kommunenavn: 'Nittedal'
+              kommunenavn: 'Bærum'
+              kommunenavn: 'Tromsø'
+              kommunenavn: 'Oslo'
+              kommunenavn: 'Sandefjord'
+              kommunenavn: 'Ås'
+
+---
+
+
+test_name: Nabokommuner til Flakstad. Sjekker også sorteringsparameter.
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/1859/nabokommuner"
+      params: {'sorter': 'kommunenavn'}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        - kommunenavn: "Moskenes"
+          kommunenavnNorsk:  "Moskenes"
+          kommunenummer: "1874"
+        - kommunenavn: "Vestvågøy"
+          kommunenavnNorsk:  "Vestvågøy"
+          kommunenummer: "1860"
+
+
+---
+
+test_name: kommunenavn-søk
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/sok"
+      params: {'knavn': '*oltåle*'}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        antallTreff: 1
+        kommuner:
+          - kommunenavn: "Holtålen"
+            kommunenummer: "5026"
+
+
+---
+
+test_name: fylkerkommuner endepunkt
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylkerkommuner"
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+
+
+---
+
+test_name: kommunenavn-søk, ikke dobbelt av Porsanger. Passer på at kommunen ikke ligger dobbelt. Dette har skjedd før fordi navn med prioritet 2 og 3 ble begge feilaktig gitt pri 3.
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/sok"
+      params: {'knavn': 'porsanger'}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        antallTreff: 1
+        kommuner:
+          - kommunenavn: "Porsanger"
+
+---
+
+test_name: Oslo fylke område
+
+strict:
+  - headers:off
+  - json:off
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker/03/omrade"
+      params: {'utkoordsys': 25833}
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        omrade:
+          coordinates:
+            -
+              - !anything
+          type: "MultiPolygon"
+        fylkesnavn: "Oslo"
+
