@@ -17,8 +17,8 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
    - Avhengigheter bare for å kjøre opp applikasjonen: `pip install -r requirements_v2.txt`
 6. Parametre mot databasen er lagt opp til at skal ligge i vault:
    - Starte lokal instans av vault: `docker compose -f docker-compose-vault.yml up`
-   - Logg på vault på localhost:8200 og opprett en ny secret engine ved navn nibas
-   - Legg til en ny hemmelighet som heter kommuneinfo med tre innslag: db_host, db_port, db_password
+   - Logg på vault på localhost:8200 og opprett en ny secret engine med pathen nibas: ![SECRET_ENGINE](/readme/enable_secret_engine.jpg "Opprett ny secret engine")
+   - Legg til en ny hemmelighet som heter kommuneinfo med tre innslag: db_host, db_port, db_password: ![NEW_SECRET](/readme/new_secret.jpg "Opprett ny hemmelighet")
 7. Starte opp applikasjon. Her har man to muligheter
    1. Starte opp som flask-applikasjon: 
       - `export FLASK_DEBUG=True`
