@@ -47,3 +47,4 @@ TAVERN_TEST_URL='http://localhost:5000/' pytest
 - Kjøre opp applikasjonen i docker
 - Oppgradere alt av avhengigheter - skrur på dependabot på github
 - Deploy med github actions og argo
+- Oppsett på mac
