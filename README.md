@@ -11,18 +11,22 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
 4. Aktiver virtual environment. Hvordan du gjør det kommer an på om du er i cmd shell eller i et *nix-shell:
     - cmd shell: `venv\Scripts\activate.bat`
     - *nix-shell: `source venv\Scripts\activate`
-5. Installer avhengigheter vha pip (disse finner man igjen i venv/Lib/site-packages etter installasjon):
+5. Installer avhengigheter vha pip. NB! Dette steget kan man hoppe over dersom man ønsker å kjøre opp applikasjonen i en docker-container:
    a: NB! Grunnet problemer med psycopg2-binary==2.8.* lokalt (må brukes på centOS-serverne i prod) har jeg laget en egen requirements_v2.txt. Denne definerer bare at vi bruker psycopg2, da fungerer det lokalt
-    - Alle avhengigheter (for å kunne kjøre tester lokalt): `pip install -r dev_requirements.txt` <-- Denne tar også med seg avhengigheter definert i requirements.txt
-    - Avhengigheter bare for å kjøre opp applikasjonen: `pip install -r requirements_v2.txt`
-6. Oppdater config.py med korrekte verdier for database og user, dvs kommenter inn de du ønsker/sett egne - foreløpig manuelt steg
-7. Sett miljøvariable for hhv `DBCLUSTER_2` og `PG_PASS_ADM_ENH` for den databasen du ønsker å koble deg opp mot
-
-### Lokalt dev-miljø
-6. Aktiver Flask debug mode: `export FLASK_DEBUG=True`
-7. Start flask dev-server: `flask run`
-8. Gå til <http://localhost:5000>
-9. Dersom man skal teste endepunktene kan man ikke teste disse via den genererte siden ettersom disse går rett mot endepunktene på geonorge. Egne endepunkt ligger rett på localhost:5000, eksempelvis: http://localhost:5000/kommuner  
+   - Alle avhengigheter (for å kunne kjøre tester lokalt): `pip install -r dev_requirements.txt` <-- Denne tar også med seg avhengigheter definert i requirements.txt
+   - Avhengigheter bare for å kjøre opp applikasjonen: `pip install -r requirements_v2.txt`
+6. Parametre mot databasen er lagt opp til at skal ligge i vault:
+   - Starte lokal instans av vault: `docker compose -f docker-compose-vault.yml up`
+   - Logg på vault på localhost:8200 og opprett en ny secret engine ved navn nibas
+   - Legg til en ny hemmelighet som heter kommuneinfo med tre innslag: db_host, db_port, db_password
+7. Starte opp applikasjon. Her har man to muligheter
+   1. Starte opp som flask-applikasjon: 
+      - `export FLASK_DEBUG=True`
+      - `flask run`
+   2. Starte opp som docker-image:
+      - Bygge docker-image for applikasjon: `docker build -t smia-kommuneinfo .`
+      - Kjøre opp docker-image: `docker run -p 5000:5000 smia-kommuneinfo`
+8. Teste endepunktene: Disse kan ikke testes via swagger ettersom disse går rett mot endepunktene på geonorge. Egne endepunkt ligger rett på localhost:5000, eksempelvis: http://localhost:5000/kommuner
 
 ## Installering (rutine fra gammelt repo, basert på linux)
 1. git clone dette repoet

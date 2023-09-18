@@ -516,7 +516,11 @@ def openapi_json():
     return jsonify(spec.to_dict())
 
 
-@app.route('/')
-@app.route('/index.html')
+@app.route('/swagger')
+@app.route('/swagger-index.html')
 def swagger_ui():
     return render_template('swagger-ui.html')
+
+@app.route('/')
+def home():
+    return render_template('index.html')

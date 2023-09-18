@@ -9,3 +9,4 @@ marshmallow==3.5.*
 psycopg2-binary==2.8.*
 PyYAML==5.3.*
 Werkzeug==1.0.*
+hvac==1.2.*
