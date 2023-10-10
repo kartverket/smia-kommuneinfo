@@ -2,23 +2,28 @@
 
 Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized view som forenkler datastrukturen i administrative-enheter-modellen. 
 
-## Oppsett på windows
+## Oppsett
 1. Installere python (via firmaportal)
 2. Oppdater system-miljøvariable til å peke på python (installeres under program files om man bruker firmaportal) og python/Scripts
 3. Lag og aktiver et python virtual environment (https://python.land/virtual-environments/virtualenv). To muligheter:
     - `python -m venv venv`
     - `virtualenv venv` (forutsetter at man har installert virtualenv: pip install virtualenv)
-4. Aktiver virtual environment. Hvordan du gjør det kommer an på om du er i cmd shell eller i et *nix-shell:
-    - cmd shell: `venv\Scripts\activate.bat`
-    - *nix-shell: `source venv\Scripts\activate`
+4. Aktiver virtual environment
+   1. Windows
+      - cmd shell: `venv\Scripts\activate.bat`
+      - bash-shell: `source venv\Scripts\activate`
+   2. Mac
+      - `source venv/bin/activate` 
 5. Installer avhengigheter vha pip. NB! Dette steget kan man hoppe over dersom man ønsker å kjøre opp applikasjonen i en docker-container:
    a: NB! Grunnet problemer med psycopg2-binary==2.8.* lokalt (må brukes på centOS-serverne i prod) har jeg laget en egen requirements_v2.txt. Denne definerer bare at vi bruker psycopg2, da fungerer det lokalt
    - Alle avhengigheter (for å kunne kjøre tester lokalt): `pip install -r dev_requirements.txt` <-- Denne tar også med seg avhengigheter definert i requirements.txt
    - Avhengigheter bare for å kjøre opp applikasjonen: `pip install -r requirements_v2.txt`
 6. Parametre mot databasen er lagt opp til at skal ligge i vault:
    - Starte lokal instans av vault: `docker compose -f docker-compose-vault.yml up`
-   - Logg på vault på localhost:8200 og opprett en ny secret engine med pathen nibas: ![SECRET_ENGINE](/readme/enable_secret_engine.jpg "Opprett ny secret engine")
+   - Logg på vault på localhost:8200 (velg påloggingsmetode Token og bruk token referert til av `VAULT_DEV_ROOT_TOKEN_ID` fra docker-compose-vault.yml). 
+   - Opprett en ny secret engine av typen KV med pathen nibas: ![SECRET_ENGINE](/readme/enable_secret_engine.jpg "Opprett ny secret engine")
    - Legg til en ny hemmelighet som heter kommuneinfo med tre innslag: db_host, db_port, db_password: ![NEW_SECRET](/readme/new_secret.jpg "Opprett ny hemmelighet")
+     For verdiene for db_host, db_port og db_password kan man pr nå (tidlig oktober 2023) bruke `rin-db1551`, `5432` og finne passord her: https://vault.test.skip.statkart.no/ui/vault/secrets/nibas/show/nibas-db (spring.datasource.url). Man vil da gå mot test-basen hvor materialiserte views er satt opp.    
 7. Starte opp applikasjon. Her har man to muligheter
    1. Starte opp som flask-applikasjon: 
       - `export FLASK_DEBUG=True`
