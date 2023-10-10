@@ -3,22 +3,23 @@ WITH multipol AS (SELECT kommune.omraade,
                          kl_kn.codevalue AS kommunenummer,
                          kommune.objtype,
                          kommune.samiskforvaltningsomraade AS samiskforvaltningsomrade,
-                         kommune.objid
+                         kommune.objid,
+                         kommune.lokalid
                   FROM kommune
-                            LEFT JOIN kodeliste_kommunenummer kl_kn ON kl_kn.uuid = kommune.kommunenummer),
+                           LEFT JOIN kodeliste_kommunenummer kl_kn ON kl_kn.uuid = kommune.kommunenummer),
      fylke AS (SELECT fylke.objid,
                       nav.navn,
-                      nav.administrativenhet_fylke_fk,
+                      nav.administrativenhetlokalid,
                       kl_fn.codevalue AS fylkesnummer
                FROM fylke
-                        LEFT JOIN administrativenhetnavn nav ON nav.administrativenhet_fylke_fk = fylke.objid
+                        LEFT JOIN administrativenhetnavn nav ON nav.administrativenhetlokalid = fylke.lokalid
                         LEFT JOIN kodeliste_fylkesnummer kl_fn ON kl_fn.uuid = fylke.fylkesnummer
                WHERE nav.rekkefoelge = 1
                   OR nav.rekkefoelge IS NULL),
      navnpri1 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
-                         nav.administrativenhet_kommune_fk AS kommune_fk
+                         nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
                   WHERE nav.rekkefoelge = 1
@@ -26,21 +27,21 @@ WITH multipol AS (SELECT kommune.omraade,
      navnpri2 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
-                         nav.administrativenhet_kommune_fk AS kommune_fk
+                         nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
                   WHERE nav.rekkefoelge = 2),
      navnpri3 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
-                         nav.administrativenhet_kommune_fk AS kommune_fk
+                         nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
                   WHERE nav.rekkefoelge = 3),
      navn_norsk AS (SELECT nav.objid,
                            nav.navn,
                            spr.description                   AS sprak,
-                           nav.administrativenhet_kommune_fk AS kommune_fk
+                           nav.administrativenhetlokalid AS kommune_lokalid
                     FROM administrativenhetnavn nav
                              LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
                     WHERE nav.spraak = 'nor')
@@ -65,10 +66,10 @@ SELECT multipol.objid,
        box2d(multipol.omraade)                                        AS bbox_enkel
 FROM multipol
          LEFT JOIN fylke ON LEFT(multipol.kommunenummer, 2) = fylke.fylkesnummer
-         LEFT JOIN navn_norsk ON multipol.objid = navn_norsk.kommune_fk
-         LEFT JOIN navnpri1 ON multipol.objid = navnpri1.kommune_fk
-         LEFT JOIN navnpri2 ON multipol.objid = navnpri2.kommune_fk
-         LEFT JOIN navnpri3 ON multipol.objid = navnpri3.kommune_fk
+         LEFT JOIN navn_norsk ON multipol.lokalid = navn_norsk.kommune_lokalid
+         LEFT JOIN navnpri1 ON multipol.lokalid = navnpri1.kommune_lokalid
+         LEFT JOIN navnpri2 ON multipol.lokalid = navnpri2.kommune_lokalid
+         LEFT JOIN navnpri3 ON multipol.lokalid = navnpri3.kommune_lokalid
 ORDER BY multipol.kommunenummer;
 
 CREATE MATERIALIZED VIEW matview_fylker AS
@@ -78,46 +79,47 @@ WITH multipol AS (
         kl_fn.codevalue AS fylkesnummer,
         objtype,
         samiskforvaltningsomraade AS samiskforvaltningsomrade,
-        objid
+        objid,
+        lokalid
     FROM fylke
-		LEFT JOIN kodeliste_fylkesnummer kl_fn ON kl_fn.uuid = fylke.fylkesnummer
+             LEFT JOIN kodeliste_fylkesnummer kl_fn ON kl_fn.uuid = fylke.fylkesnummer
 ),
-navnpri1 AS (
-	SELECT nav.objid,
-		nav.navn,
-		spr.description AS sprak,
-		nav.administrativenhet_fylke_fk AS fylke_fk
-	FROM administrativenhetnavn nav
-		LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-	WHERE nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL
-),
-navnpri2 AS (
-	SELECT nav.objid,
-		nav.navn,
-		spr.description AS sprak,
-		nav.administrativenhet_fylke_fk AS fylke_fk
-	FROM administrativenhetnavn nav
-		LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-	WHERE nav.rekkefoelge = 2
-),
-navnpri3 AS (
-	SELECT nav.objid,
-		nav.navn,
-		spr.description AS sprak,
-		nav.administrativenhet_fylke_fk AS fylke_fk
-	FROM administrativenhetnavn nav
-		LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-	WHERE nav.rekkefoelge = 3
-),
-navn_norsk AS (
-	SELECT nav.objid,
-		nav.navn,
-		spr.description AS sprak,
-		nav.administrativenhet_fylke_fk AS fylke_fk
-	FROM administrativenhetnavn nav
-		LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-	WHERE nav.spraak = 'nor'
-)
+     navnpri1 AS (
+         SELECT nav.objid,
+                nav.navn,
+                spr.description AS sprak,
+                nav.administrativenhetlokalid AS fylke_lokalid
+         FROM administrativenhetnavn nav
+                  LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
+         WHERE nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL
+     ),
+     navnpri2 AS (
+         SELECT nav.objid,
+                nav.navn,
+                spr.description AS sprak,
+                nav.administrativenhetlokalid AS fylke_lokalid
+         FROM administrativenhetnavn nav
+                  LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
+         WHERE nav.rekkefoelge = 2
+     ),
+     navnpri3 AS (
+         SELECT nav.objid,
+                nav.navn,
+                spr.description AS sprak,
+                nav.administrativenhetlokalid AS fylke_lokalid
+         FROM administrativenhetnavn nav
+                  LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
+         WHERE nav.rekkefoelge = 3
+     ),
+     navn_norsk AS (
+         SELECT nav.objid,
+                nav.navn,
+                spr.description AS sprak,
+                nav.administrativenhetlokalid AS fylke_lokalid
+         FROM administrativenhetnavn nav
+                  LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
+         WHERE nav.spraak = 'nor'
+     )
 SELECT multipol.objid,
        multipol.fylkesnummer,
        multipol.samiskforvaltningsomrade,
@@ -130,16 +132,16 @@ SELECT multipol.objid,
        navnPri2.sprak AS navn_pri_2_sprak,
        navnPri3.sprak AS navn_pri_3_sprak,
        multipol.omraade::geometry(Geometry,25833) AS omrade,
-        ST_PointOnSurface(multipol.omraade)::geometry(Geometry,25833) AS punkt_i_omrade,
-        ST_AsGeoJSON(ST_PointOnSurface(multipol.omraade), 12, 2)::json AS punkt_i_omrade_json,
-        ST_Envelope(multipol.omraade)::geometry(Geometry,25833) AS bbox,
-        ST_AsGeoJSON(ST_Envelope(multipol.omraade), 12, 2)::json AS bbox_json,
-        Box2D(multipol.omraade) AS bbox_enkel
+       ST_PointOnSurface(multipol.omraade)::geometry(Geometry,25833) AS punkt_i_omrade,
+       ST_AsGeoJSON(ST_PointOnSurface(multipol.omraade), 12, 2)::json AS punkt_i_omrade_json,
+       ST_Envelope(multipol.omraade)::geometry(Geometry,25833) AS bbox,
+       ST_AsGeoJSON(ST_Envelope(multipol.omraade), 12, 2)::json AS bbox_json,
+       Box2D(multipol.omraade) AS bbox_enkel
 FROM multipol
-         LEFT JOIN navn_norsk ON multipol.objid = navn_norsk.fylke_fk
-         LEFT JOIN navnPri1 ON multipol.objid = navnPri1.fylke_fk
-         LEFT JOIN navnPri2 ON multipol.objid = navnPri2.fylke_fk
-         LEFT JOIN navnPri3 ON multipol.objid = navnPri3.fylke_fk
+         LEFT JOIN navn_norsk ON multipol.lokalid = navn_norsk.fylke_lokalid
+         LEFT JOIN navnPri1 ON multipol.lokalid = navnPri1.fylke_lokalid
+         LEFT JOIN navnPri2 ON multipol.lokalid = navnPri2.fylke_lokalid
+         LEFT JOIN navnPri3 ON multipol.lokalid = navnPri3.fylke_lokalid
 ORDER BY multipol.fylkesnummer;
 
 
