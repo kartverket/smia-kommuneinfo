@@ -6,7 +6,9 @@ WITH multipol AS (SELECT kommune.omraade,
                          kommune.objid,
                          kommune.lokalid
                   FROM kommune
-                           LEFT JOIN kodeliste_kommunenummer kl_kn ON kl_kn.uuid = kommune.kommunenummer),
+                           LEFT JOIN kodeliste_kommunenummer kl_kn ON kl_kn.uuid = kommune.kommunenummer
+                  WHERE (kommune.gyldigFra <= '2024-01-01' AND (kommune.gyldigTil is null OR kommune.gyldigTil > '2024-01-01'))
+                  ),
      fylke AS (SELECT fylke.objid,
                       nav.navn,
                       nav.administrativenhetlokalid,
@@ -14,37 +16,44 @@ WITH multipol AS (SELECT kommune.omraade,
                FROM fylke
                         LEFT JOIN administrativenhetnavn nav ON nav.administrativenhetlokalid = fylke.lokalid
                         LEFT JOIN kodeliste_fylkesnummer kl_fn ON kl_fn.uuid = fylke.fylkesnummer
-               WHERE nav.rekkefoelge = 1
-                  OR nav.rekkefoelge IS NULL),
+               WHERE (nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL)
+               AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
+               ),
      navnpri1 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
                          nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-                  WHERE nav.rekkefoelge = 1
-                     OR nav.rekkefoelge IS NULL),
+                  WHERE (nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL)
+                    AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
+                  ),
      navnpri2 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
                          nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-                  WHERE nav.rekkefoelge = 2),
+                  WHERE nav.rekkefoelge = 2
+                    AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
+                  ),
      navnpri3 AS (SELECT nav.objid,
                          nav.navn,
                          spr.description                   AS sprak,
                          nav.administrativenhetlokalid AS kommune_lokalid
                   FROM administrativenhetnavn nav
                            LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-                  WHERE nav.rekkefoelge = 3),
+                  WHERE nav.rekkefoelge = 3
+                    AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
+                  ),
      navn_norsk AS (SELECT nav.objid,
                            nav.navn,
                            spr.description                   AS sprak,
                            nav.administrativenhetlokalid AS kommune_lokalid
                     FROM administrativenhetnavn nav
                              LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-                    WHERE nav.spraak = 'nor')
+                    WHERE nav.spraak = 'nor'
+                      AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01')))
 SELECT multipol.objid,
        multipol.kommunenummer,
        multipol.samiskforvaltningsomrade,
@@ -83,6 +92,7 @@ WITH multipol AS (
         lokalid
     FROM fylke
              LEFT JOIN kodeliste_fylkesnummer kl_fn ON kl_fn.uuid = fylke.fylkesnummer
+    WHERE (fylke.gyldigFra <= '2024-01-01' AND (fylke.gyldigTil is null OR fylke.gyldigTil > '2024-01-01'))
 ),
      navnpri1 AS (
          SELECT nav.objid,
@@ -91,7 +101,8 @@ WITH multipol AS (
                 nav.administrativenhetlokalid AS fylke_lokalid
          FROM administrativenhetnavn nav
                   LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
-         WHERE nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL
+         WHERE (nav.rekkefoelge = 1 OR nav.rekkefoelge IS NULL)
+           AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
      ),
      navnpri2 AS (
          SELECT nav.objid,
@@ -101,6 +112,7 @@ WITH multipol AS (
          FROM administrativenhetnavn nav
                   LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
          WHERE nav.rekkefoelge = 2
+           AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
      ),
      navnpri3 AS (
          SELECT nav.objid,
@@ -110,6 +122,7 @@ WITH multipol AS (
          FROM administrativenhetnavn nav
                   LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
          WHERE nav.rekkefoelge = 3
+           AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
      ),
      navn_norsk AS (
          SELECT nav.objid,
@@ -119,7 +132,8 @@ WITH multipol AS (
          FROM administrativenhetnavn nav
                   LEFT JOIN spraakkode spr ON nav.spraak = spr.identifier
          WHERE nav.spraak = 'nor'
-     )
+           AND (nav.gyldigFra <= '2024-01-01' AND (nav.gyldigTil is null OR nav.gyldigTil > '2024-01-01'))
+         )
 SELECT multipol.objid,
        multipol.fylkesnummer,
        multipol.samiskforvaltningsomrade,
