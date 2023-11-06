@@ -18,6 +18,13 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
 6. Oppdater config.py med korrekte verdier for database og user, dvs kommenter inn de du ønsker/sett egne - foreløpig manuelt steg
 7. Sett miljøvariable for hhv `DBCLUSTER_2` og `PG_PASS_ADM_ENH` for den databasen du ønsker å koble deg opp mot
 
+## Oppsett mac
+
+Som i Windows, men:
+
+1. Endre locale i config.py til `no_NO.UTF-8`
+2. Trenger også `psycopg2-binary`-pakken. Denne er nå lagt til i `dev_requirements.txt`
+
 ### Lokalt dev-miljø
 6. Aktiver Flask debug mode: `export FLASK_DEBUG=True`
 7. Start flask dev-server: `flask run`
