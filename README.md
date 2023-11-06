@@ -23,7 +23,7 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
 Som i Windows, men:
 
 1. Endre locale i config.py til `no_NO.UTF-8`
-2. Trenger også `psycopg2-binary`-pakken. Denne er nå lagt til i `dev_requirements.txt`
+2. Trenger også `psycopg2-binary`-pakken. Denne er nå lagt til i `dev_requirements_v2.txt`
 
 ### Lokalt dev-miljø
 6. Aktiver Flask debug mode: `export FLASK_DEBUG=True`
