@@ -31,3 +31,9 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
         $ pytest
 
 Merk at testene ikke kjører opp en egen in-memory database eller liknende, og dermed må du ha databasen kjørende lokalt.
+
+### TODO
+
+- Tester som del av pipeline
+- Tester burde helst ikke være integrasjonstester med database
+- Ikke instansiere databaseconnection hver gang men bruke pooling
