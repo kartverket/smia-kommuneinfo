@@ -135,14 +135,17 @@ def return_jsonify_dump(outSchema, outDict, many=False):
 
 
 def sorting_list_of_dicts(listOfDicts, sortByKeyName):
-    logging.debug('Trying to sort "%s" by key "%s"' % (listOfDicts, sortByKeyName))
+    logging.debug('Trying to sort "%s" by key "%s"' %
+                  (listOfDicts, sortByKeyName))
     if sortByKeyName is None:
         return listOfDicts
     try:
         return sorted(listOfDicts, key=lambda t: locale.strxfrm(t[sortByKeyName]))
     except TypeError as e:
-        logging.warning('User probably tried to sort by key which points to a dict/list: %s' % e)
-        abort(make_response(jsonify(message="Feil i sorterings-parameterene: %s. Felt må peke på verdi. " % sortByKeyName), 400))
+        logging.warning(
+            'User probably tried to sort by key which points to a dict/list: %s' % e)
+        abort(make_response(jsonify(
+            message="Feil i sorterings-parameterene: %s. Felt må peke på verdi. " % sortByKeyName), 400))
 
 
 def order_fields(result):
@@ -173,7 +176,7 @@ def get_fylker():
                                            md.ParamsStandard())
     filters = create_filtering_dict(validParams)
     query = db.Queries().fylke_enkel()
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query)
     filterModel = filter_model(md.FylkerEnkel, filters)
     sortedResult = order_fields(output)
@@ -202,13 +205,14 @@ def get_kommuner_in_fylke(fylkesnummer):
     fylkesnummer = Validate().regionsnummer(fylkesnummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     query = db.Queries().kom_enkel(where="WHERE fylkesnummer = %s")
     kommResult = dbObj.perform_query_format_response(query, fylkesnummer)
     kommOutDict = {}
     kommOutDict['kommuner'] = order_fields(kommResult)
 
-    query2 = db.Queries(toSrid=outSrid).fylke_full(where="WHERE fylkesnummer = %s")
+    query2 = db.Queries(toSrid=outSrid).fylke_full(
+        where="WHERE fylkesnummer = %s")
     fylkeResult = dbObj.perform_query_format_response(query2, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerKommunerEnkel, filters)
     output = fylkeResult.copy()
@@ -238,8 +242,9 @@ def get_fylke_polygon(fylkesnummer):
     fylkesnummer = Validate().regionsnummer(fylkesnummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).fylke_polygon(where="WHERE fylkesnummer = %s")
-    output = db.DbConn(cf.dbc).perform_query_format_response(query, fylkesnummer)[0]
+    query = db.Queries(toSrid=outSrid).fylke_polygon(
+        where="WHERE fylkesnummer = %s")
+    output = db.DbConn().perform_query_format_response(query, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
 
@@ -266,7 +271,7 @@ def fylker_kommuner_full():
     orderFylkBy = request.args.get('sorterfylker')
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     # get kommuner
     query = db.Queries(toSrid=outSrid).kom_full()
     kommResult = dbObj.perform_query_format_response(query)
@@ -302,7 +307,7 @@ def get_kommuner():
                                            md.ParamsStandard())
     filters = create_filtering_dict(validParams)
     query = db.Queries().kom_enkel()
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query)
     sortedOutput = order_fields(output)
     filterModel = filter_model(md.KomEnkelNorskNavn, filters)
@@ -329,7 +334,7 @@ def get_kommuner_illustrasjonskart():
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
     query = db.Queries(toSrid=outSrid).kom_illustrasjonskart()
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     output = dbObj.perform_query_get_response(query)[0][0]
     filterModel = filter_model(md.geoJsonFeatureCollection, filters)
     return return_jsonify_dump(filterModel, output, many=False)
@@ -357,8 +362,9 @@ def get_kommune(kommunenummer):
     knr = Validate().regionsnummer(kommunenummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).kom_full(where="WHERE kommunenummer = %s")
-    dbObj = db.DbConn(cf.dbc)
+    query = db.Queries(toSrid=outSrid).kom_full(
+        where="WHERE kommunenummer = %s")
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, knr)[0]
     filterModel = filter_model(md.KomFull, filters)
     return return_jsonify_dump(filterModel, output, many=False)
@@ -386,7 +392,7 @@ def get_neighbouring_kommune(kommunenummer):
     knr = Validate().regionsnummer(kommunenummer)
     filters = create_filtering_dict(validParams)
     query = db.Queries().kom_neighbours()
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, knr)
     sortedOutput = order_fields(output)
     filterModel = filter_model(md.KomEnkelNorskNavn, filters)
@@ -415,8 +421,9 @@ def get_kommune_polygon(kommunenummer):
     knr = Validate().regionsnummer(kommunenummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).kom_polygon(where="WHERE kommunenummer = %s")
-    dbObj = db.DbConn(cf.dbc)
+    query = db.Queries(toSrid=outSrid).kom_polygon(
+        where="WHERE kommunenummer = %s")
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, knr)[0]
     filterModel = filter_model(md.KomEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
@@ -442,9 +449,10 @@ def get_kommune_for_point():
     nord, ost = Validate().lat_lon(request.args.get('nord'), request.args.get('ost'))
     srid = Validate().srid(request.args.get('koordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries().kom_fylke_enkel(where="""WHERE ST_Within(ST_Transform(ST_GeomFromText('POINT(%s %s)', %s), %s), omrade)""")
+    query = db.Queries().kom_fylke_enkel(
+        where="""WHERE ST_Within(ST_Transform(ST_GeomFromText('POINT(%s %s)', %s), %s), omrade)""")
     queryInput = ost, nord, srid, cf.defSrid
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, queryInput)[0]
     filterModel = filter_model(md.KommuneFylkeEnkel, filters)
     return return_jsonify_dump(filterModel, output, many=False)
@@ -482,7 +490,7 @@ def search_by_kommunenavn():
     query = db.Queries(toSrid=outSrid).kom_full(where='''WHERE LOWER(navn_pri_1) {0}
                                        OR LOWER(navn_pri_2) {0}
                                         OR LOWER(navn_pri_3) {0}'''.format(likeString))
-    dbObj = db.DbConn(cf.dbc)
+    dbObj = db.DbConn()
     userInput = sokNoWildcard, sokNoWildcard, sokNoWildcard
     output = dbObj.perform_query_format_response(query, userInput)
     filterModel = filter_model(md.NavnSokKommune, filters)
@@ -510,7 +518,8 @@ with app.test_request_context():
     spec.path(view=search_by_kommunenavn)
 
 
-@app.route('/static/openapi_doc.json')  # this is where it was originally placed
+# this is where it was originally placed
+@app.route('/static/openapi_doc.json')
 @app.route('/openapi.json')
 def openapi_json():
     return jsonify(spec.to_dict())
