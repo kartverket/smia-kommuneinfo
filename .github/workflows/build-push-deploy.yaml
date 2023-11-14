@@ -1,9 +1,9 @@
 name: Build, push and deploy to ArgoCD
 on:
   push:
-    branches: [master]
+    branches: ["main"]
   pull_request:
-    branches: [master]
+    branches: ["main"]
 
 env:
   DOCKER_REGISTRY: ghcr.io
