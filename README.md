@@ -19,6 +19,7 @@ Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized vi
    - `DB_URI` - default `postgresql://localhost:5432/nibas`
    - `FLASK_DEBUG=True` - brukes kun under utvikling, gjør at du kan bruke OpenAPI lokalt for å teste endepunkter
 5. Start flask dev-server: `flask run`
+6. Appen kan nå nås på `http://localhost:5000`
 
 ### Kjøre tester
 
