@@ -53,6 +53,7 @@ jobs:
 
   deploy-argo:
     needs: build
+    if: ${{ !github.event.pull_request }}
     uses: kartverket/smia-apps/.github/workflows/release-app.yml@main
     with:
       application: kommuneinfo
