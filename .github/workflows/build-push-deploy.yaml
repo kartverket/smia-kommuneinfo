@@ -16,7 +16,7 @@ jobs:
       actions: read
 
     outputs:
-      image_url: ${{ steps.set_output.outputs.image_url }}
+      version: ${{ steps.set_output.outputs.version }}
 
     steps:
       - name: Checkout Repo
@@ -47,14 +47,14 @@ jobs:
         id: set_output
         run: |
           echo "Full Image URL: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
-          echo "image_url=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
+          echo "version=${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
 
   deploy-argo:
     needs: build
     uses: kartverket/smia-apps/.github/workflows/release-app.yml@main
     with:
       application: kommuneinfo
-      version: ${{ needs.build.outputs.image_url }}
+      version: ${{ needs.build.outputs.version }}
       namespace: "smia-tjenester-main"
       deploy_dev: true
     secrets:
