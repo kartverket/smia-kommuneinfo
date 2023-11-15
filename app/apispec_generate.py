@@ -9,7 +9,7 @@ from apispec_webframeworks.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 
-is_dev = int(os.environ.get('FLASK_DEBUG'))
+is_dev = True if os.environ.get('FLASK_DEBUG') == "1" else False
 
 host = "localhost:5000" if is_dev else "ws.geonorge.no"
 basepath = "/" if is_dev else "/kommuneinfo/v1"
