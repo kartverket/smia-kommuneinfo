@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: kommuneinfo
+  IMAGE_NAME: kartverket/kommuneinfo
 
 jobs:
   build:
