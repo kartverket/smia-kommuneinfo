@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: kommuneinfo
+  IMAGE_NAME: kartverket/kommuneinfo
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build docker and push
+      - name: Build docker image and push
         id: build
         uses: docker/build-push-action@v4
         with:
