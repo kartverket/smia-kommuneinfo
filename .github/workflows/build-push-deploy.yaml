@@ -2,12 +2,10 @@ name: Build, push and deploy to ArgoCD
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 env:
   DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: kommuneinfo
+  IMAGE_NAME: kartverket/kommuneinfo
 
 jobs:
   build:
@@ -37,13 +35,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build docker and push
+      - name: Build docker image and push
         id: build
         uses: docker/build-push-action@v4
         with:
           context: .
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }} , ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          push: ${{ !github.event.pull_request }}
+          push: true
 
       - name: Summarize Image Digest and Set Output
         id: set_output
@@ -53,7 +51,6 @@ jobs:
 
   deploy-argo:
     needs: build
-    if: ${{ !github.event.pull_request }}
     uses: kartverket/smia-apps/.github/workflows/release-app.yml@main
     with:
       application: kommuneinfo
