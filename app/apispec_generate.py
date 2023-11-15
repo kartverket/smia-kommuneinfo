@@ -3,10 +3,17 @@
 Generates an open-api spec from the endpoints and models.
 """
 
+import os
 from apispec import APISpec
 from apispec_webframeworks.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 
+
+is_dev = int(os.environ.get('FLASK_DEBUG'))
+
+host = "localhost:5000" if is_dev else "ws.geonorge.no"
+basepath = "/" if is_dev else "/kommuneinfo/v1"
+scheme = "http" if is_dev else "https"
 
 spec = APISpec(
     title='Åpent API fra Kartverket for administrative enheter.',
@@ -21,9 +28,9 @@ spec = APISpec(
     ),
     consumes=["application/json"],
     produces=["application/json"],
-    host="ws.geonorge.no",
-    basePath="/kommuneinfo/v1",
-    schemes=["https"],
+    host=host,
+    basePath=basepath,
+    schemes=[scheme],
     plugins=[
         FlaskPlugin(),
         MarshmallowPlugin(),

@@ -1,0 +1,64 @@
+name: Build, push and deploy to ArgoCD
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: kommuneinfo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: read
+
+    outputs:
+      image_url: ${{ steps.set_output.outputs.image_url }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build docker and push
+        id: build
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }} , ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          push: ${{ !github.event.pull_request }}
+
+      - name: Summarize Image Digest and Set Output
+        id: set_output
+        run: |
+          echo "Full Image URL: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "image_url=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
+
+  deploy-argo:
+    needs: build
+    if: ${{ !github.event.pull_request }}
+    uses: kartverket/smia-apps/.github/workflows/release-app.yml@main
+    with:
+      application: kommuneinfo
+      version: ${{ needs.build.outputs.image_url }}
+      namespace: "smia-tjenester-main"
+      deploy_dev: true
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_ARGOCD }}

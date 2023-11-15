@@ -1,17 +1,9 @@
 import os
 
-database = 'nibas'
-user = 'nibas'
-# database = 'administrative_enheter'
-# user = 'dbles'
-port = '5432'
-host = os.environ.get('DBCLUSTER_2')
-password = os.environ.get('PG_PASS_ADM_ENH')
-
-dbc = {'database': database, 'user': user,
-              'port': port, 'host': host, 'password': password}
+db_user = os.environ.get('DB_USER', default='nibas')
+db_password = os.environ.get('DB_PASSWORD', default="nibas")
+db_uri = os.environ.get('DB_URI', default="postgresql://localhost:5432/nibas")
 
 defSrid = 4258
 set_json_as_ascii = False
-locale_choice = 'nn_NO.utf8'
-
+locale_choice = 'no_NO.UTF-8'

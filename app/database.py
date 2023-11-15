@@ -13,8 +13,9 @@ logging = logging.getLogger(__name__)
 class DbConn():
     """Connect to the db, perform a query and format the response"""
 
-    def __init__(self, dbc):
-        self.conn = psycopg2.connect(**dbc)
+    def __init__(self):
+        self.conn = psycopg2.connect(
+            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
         self.cur = self.conn.cursor()
 
     def perform_query_format_response(self, query, userInput=False):
@@ -30,7 +31,8 @@ class DbConn():
         """userInput is included here because of protection against sql-injection when
         the parameters are inserted as a tuple in the cur.execute-command.
         """
-        logging.debug('Query to execute: %s. With input: %s' % (query, userInput))
+        logging.debug('Query to execute: %s. With input: %s' %
+                      (query, userInput))
         if not isinstance(userInput, tuple):
             userInput = (userInput,)
         try:
@@ -39,7 +41,8 @@ class DbConn():
             else:
                 self.cur.execute(query)
         except Exception as e:
-            logging.error('Encountered exception when performing query: %s' % e)
+            logging.error(
+                'Encountered exception when performing query: %s' % e)
             if "Cannot find SRID" in str(e):
                 abort(400, "Koordinatsystemet/SRID er ikke støttet.")
             else:
@@ -133,7 +136,8 @@ class Queries:
         if self.toSrid == self.fromSrid:
             geomCols = """bbox_json AS avgrensningsboks"""
         else:
-            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
+            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
+                self.toSrid)
         return """SELECT fylkesnummer,
                     navn_pri_1 as fylkesnavn,
                     {1}
