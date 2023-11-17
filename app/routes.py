@@ -170,7 +170,9 @@ def get_fylker():
         responses:
             200:
                 description: OK
-                schema: FylkerEnkel
+                schema: 
+                    type: array
+                    items: FylkerEnkel
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
@@ -263,7 +265,9 @@ def fylker_kommuner_full():
         responses:
             200:
                 description: OK
-                schema: FylkerKommunerFull
+                schema: 
+                    type: array
+                    items: FylkerKommunerFull
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsKomFylk())
@@ -301,7 +305,9 @@ def get_kommuner():
         responses:
             200:
                 description: OK
-                schema: KomEnkelNorskNavn
+                schema: 
+                    type: array
+                    items: KomEnkelNorskNavn
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
@@ -385,7 +391,9 @@ def get_neighbouring_kommune(kommunenummer):
         responses:
             200:
                 description: OK
-                schema: KomEnkelNorskNavn
+                schema:
+                    type: array
+                    items: KomEnkelNorskNavn
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
