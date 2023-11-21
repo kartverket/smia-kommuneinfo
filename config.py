@@ -1,8 +1,9 @@
 import os
 
-db_user = os.environ.get('KOMMUNEINFO_DB_USER', default='nibas')
-db_password = os.environ.get('KOMMUNEINFO_DB_PASSWORD', default="nibas")
-db_uri = os.environ.get('KOMMUNEINFO_DB_URI', default="postgresql://localhost:5432/nibas")
+db_user = os.environ.get('KOMMUNEINFO_DB_USER', default='kominfo')
+db_password = os.environ.get('KOMMUNEINFO_DB_PASSWORD', default="kominfo")
+db_uri = os.environ.get('KOMMUNEINFO_DB_URI',
+                        default="postgresql://localhost:5430/kominfo")
 
 defSrid = 4258
 set_json_as_ascii = False
