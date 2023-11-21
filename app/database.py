@@ -15,7 +15,7 @@ class DbConn():
 
     def __init__(self):
         self.conn = psycopg2.connect(
-            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
+            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password, options="-c search_path=kommuneinfo,public")
         self.cur = self.conn.cursor()
 
     def perform_query_format_response(self, query, userInput=False):
