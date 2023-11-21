@@ -15,7 +15,7 @@ class DbConn():
 
     def __init__(self):
         self.conn = psycopg2.connect(
-            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password, options="-c search_path=kommuneinfo,public")
+            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
         self.cur = self.conn.cursor()
 
     def perform_query_format_response(self, query, userInput=False):
@@ -101,18 +101,18 @@ class Queries:
                          navn_pri_1 as kommunenavn,
                          fylkesnummer,
                          fylkesnavn
-                  FROM kommune {0};""".format(where)
+                  FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_enkel(self, where=''):
         return """SELECT kommunenummer,
                          navn_pri_1 as kommunenavn,
                          navn_norsk as "kommunenavnNorsk"
-                  FROM kommune {0};""".format(where)
+                  FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_illustrasjonskart(self):
         if self.toSrid == 4258:
             return """SELECT featurecollection
-                        FROM illustrasjonskart_json;"""
+                        FROM kommuneinfo.illustrasjonskart_json;"""
         return """SELECT jsonb_build_object(
                     'type',     'FeatureCollection',
                     'features', jsonb_agg(features.feature)
@@ -125,11 +125,11 @@ class Queries:
                                                      'kommunenavn', kommunenavn )
                   ) AS feature
                   FROM (
-                    SELECT * FROM illustrasjonskart) inputs) features;""".format(self.toSrid)
+                    SELECT * FROM kommuneinfo.illustrasjonskart) inputs) features;""".format(self.toSrid)
 
     def fylke_enkel(self, where=''):
         return """SELECT fylkesnummer, navn_pri_1 as fylkesnavn
-                    FROM fylke {0} """.format(where)
+                    FROM kommuneinfo.fylke {0} """.format(where)
 
     def fylke_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
@@ -141,12 +141,12 @@ class Queries:
         return """SELECT fylkesnummer,
                     navn_pri_1 as fylkesnavn,
                     {1}
-                FROM fylke {0};""".format(where, geomCols)
+                FROM kommuneinfo.fylke {0};""".format(where, geomCols)
 
     def kom_neighbours(self):
         return """SELECT b.kommunenummer, b.navn_pri_1 as kommunenavn,
                     b.navn_norsk as "kommunenavnNorsk"
-                   FROM kommune as a,
+                   FROM kommuneinfo.kommune as a,
                         kommune as b
                    WHERE ST_Intersects(a.omrade, b.omrade)
                    AND a.kommunenummer != b.kommunenummer
@@ -173,16 +173,16 @@ class Queries:
                     navn_pri_3_sprak,
                     navn_norsk as "kommunenavnNorsk",
                     {1}
-                FROM kommune {0};""".format(where, geomCols)
+                FROM kommuneinfo.kommune {0};""".format(where, geomCols)
 
     def kom_polygon(self, where=''):
         return """SELECT kommunenummer,
                         navn_pri_1 AS kommunenavn,
                         ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
-                    FROM kommune {0};""".format(where, self.toSrid)
+                    FROM kommuneinfo.kommune {0};""".format(where, self.toSrid)
 
     def fylke_polygon(self, where=''):
         return """SELECT fylkesnummer,
                         navn_pri_1 AS fylkesnavn,
                         ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
-                    FROM fylke {0};""".format(where, self.toSrid)
+                    FROM kommuneinfo.fylke {0};""".format(where, self.toSrid)
