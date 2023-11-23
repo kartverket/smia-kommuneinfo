@@ -120,7 +120,7 @@ class Queries:
                 FROM (
                   SELECT jsonb_build_object(
                     'type',       'Feature',
-                    'geometry',   ST_AsGeoJSON(ST_Transform(omrade, {0}), 3, 2)::jsonb,
+                    'geometry',   ST_AsGeoJSON(ST_Transform(kommune.omraade, {0}), 3, 2)::jsonb,
                     'properties', jsonb_build_object('kommunenummer', kommunenummer,
                                                      'kommunenavn', kommunenavn )
                   ) AS feature
@@ -136,7 +136,7 @@ class Queries:
         if self.toSrid == self.fromSrid:
             geomCols = """bbox_json AS avgrensningsboks"""
         else:
-            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
+            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(fylke.omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
                 self.toSrid)
         return """SELECT fylkesnummer,
                     navn_pri_1 as fylkesnavn,
@@ -158,7 +158,7 @@ class Queries:
             geomCols = """kommune.punkt_i_omraade_json AS punkt_i_omrade,
                        kommune.bbox_json AS avgrensningsboks"""
         else:
-            geomCols = """ST_AsGeoJSON(ST_Transform(punkt_i_omrade, {0}), 15, 2)::json AS punkt_i_omrade,
+            geomCols = """ST_AsGeoJSON(ST_Transform(kommune.punkt_i_omraade, {0}), 15, 2)::json AS punkt_i_omrade,
                     ST_AsGeoJSON(ST_Envelope(ST_Transform(kommune.omraade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
         return """SELECT kommunenummer,
                     samiskforvaltningsomrade,
@@ -184,5 +184,5 @@ class Queries:
     def fylke_polygon(self, where=''):
         return """SELECT fylkesnummer,
                         navn_pri_1 AS fylkesnavn,
-                        ST_AsGeoJSON(ST_Transform(kommune.omraade, {1}), 15, 2)::json AS omrade
+                        ST_AsGeoJSON(ST_Transform(fylke.omrade, {1}), 15, 2)::json AS omrade
                     FROM kommuneinfo.fylke {0};""".format(where, self.toSrid)
