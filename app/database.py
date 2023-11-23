@@ -147,8 +147,8 @@ class Queries:
         return """SELECT b.kommunenummer, b.navn_pri_1 as kommunenavn,
                     b.navn_norsk as "kommunenavnNorsk"
                    FROM kommuneinfo.kommune as a,
-                        kommune as b
-                   WHERE ST_Intersects(a.omrade, b.omrade)
+                        kommuneinfo.kommune as b
+                   WHERE ST_Intersects(a.omraade, b.omraade)
                    AND a.kommunenummer != b.kommunenummer
                    AND a.kommunenummer = %s;"""
 
@@ -159,7 +159,7 @@ class Queries:
                        kommune.bbox_json AS avgrensningsboks"""
         else:
             geomCols = """ST_AsGeoJSON(ST_Transform(punkt_i_omrade, {0}), 15, 2)::json AS punkt_i_omrade,
-                    ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
+                    ST_AsGeoJSON(ST_Envelope(ST_Transform(kommune.omraade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
         return """SELECT kommunenummer,
                     samiskforvaltningsomrade,
                     fylkesnavn,
@@ -178,11 +178,11 @@ class Queries:
     def kom_polygon(self, where=''):
         return """SELECT kommunenummer,
                         navn_pri_1 AS kommunenavn,
-                        ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
+                        ST_AsGeoJSON(ST_Transform(kommune.omraade, {1}), 15, 2)::json AS omrade
                     FROM kommuneinfo.kommune {0};""".format(where, self.toSrid)
 
     def fylke_polygon(self, where=''):
         return """SELECT fylkesnummer,
                         navn_pri_1 AS fylkesnavn,
-                        ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
+                        ST_AsGeoJSON(ST_Transform(kommune.omraade, {1}), 15, 2)::json AS omrade
                     FROM kommuneinfo.fylke {0};""".format(where, self.toSrid)
