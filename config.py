@@ -6,5 +6,6 @@ db_uri = os.environ.get('KOMMUNEINFO_DB_URI',
                         default="postgresql://localhost:5430/kominfo")
 
 defSrid = 4258
+default_kommuneomraade_srid = 25833
 set_json_as_ascii = False
 locale_choice = 'no_NO.UTF-8'
