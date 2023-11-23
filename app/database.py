@@ -155,8 +155,8 @@ class Queries:
     def kom_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
         if self.toSrid == self.fromSrid:
-            geomCols = """punkt_i_omrade_json AS punkt_i_omrade,
-                       bbox_json AS avgrensningsboks"""
+            geomCols = """kommune.punkt_i_omraade_json AS punkt_i_omrade,
+                       kommune.bbox_json AS avgrensningsboks"""
         else:
             geomCols = """ST_AsGeoJSON(ST_Transform(punkt_i_omrade, {0}), 15, 2)::json AS punkt_i_omrade,
                     ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
