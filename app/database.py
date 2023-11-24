@@ -101,18 +101,18 @@ class Queries:
                          navn_pri_1 as kommunenavn,
                          fylkesnummer,
                          fylkesnavn
-                  FROM matview_kommuner {0};""".format(where)
+                  FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_enkel(self, where=''):
         return """SELECT kommunenummer,
                          navn_pri_1 as kommunenavn,
                          navn_norsk as "kommunenavnNorsk"
-                  FROM matview_kommuner {0};""".format(where)
+                  FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_illustrasjonskart(self):
         if self.toSrid == 4258:
             return """SELECT featurecollection
-                        FROM matview_api_kommuner_illustrasjonskart_geojson;"""
+                        FROM kommuneinfo.illustrasjonskart_json;"""
         return """SELECT jsonb_build_object(
                     'type',     'FeatureCollection',
                     'features', jsonb_agg(features.feature)
@@ -120,46 +120,46 @@ class Queries:
                 FROM (
                   SELECT jsonb_build_object(
                     'type',       'Feature',
-                    'geometry',   ST_AsGeoJSON(ST_Transform(omrade, {0}), 3, 2)::jsonb,
+                    'geometry',   ST_AsGeoJSON(ST_Transform(kommune.omraade, {0}), 3, 2)::jsonb,
                     'properties', jsonb_build_object('kommunenummer', kommunenummer,
                                                      'kommunenavn', kommunenavn )
                   ) AS feature
                   FROM (
-                    SELECT * FROM matview_api_kommuner_illustrasjonskart) inputs) features;""".format(self.toSrid)
+                    SELECT * FROM kommuneinfo.illustrasjonskart) inputs) features;""".format(self.toSrid)
 
     def fylke_enkel(self, where=''):
         return """SELECT fylkesnummer, navn_pri_1 as fylkesnavn
-                    FROM matview_fylker {0} """.format(where)
+                    FROM kommuneinfo.fylke {0} """.format(where)
 
     def fylke_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
         if self.toSrid == self.fromSrid:
             geomCols = """bbox_json AS avgrensningsboks"""
         else:
-            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
+            geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(fylke.omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
                 self.toSrid)
         return """SELECT fylkesnummer,
                     navn_pri_1 as fylkesnavn,
                     {1}
-                FROM matview_fylker {0};""".format(where, geomCols)
+                FROM kommuneinfo.fylke {0};""".format(where, geomCols)
 
     def kom_neighbours(self):
         return """SELECT b.kommunenummer, b.navn_pri_1 as kommunenavn,
                     b.navn_norsk as "kommunenavnNorsk"
-                   FROM matview_kommuner as a,
-                        matview_kommuner as b
-                   WHERE ST_Intersects(a.omrade, b.omrade)
+                   FROM kommuneinfo.kommune as a,
+                        kommuneinfo.kommune as b
+                   WHERE ST_Intersects(a.omraade, b.omraade)
                    AND a.kommunenummer != b.kommunenummer
                    AND a.kommunenummer = %s;"""
 
     def kom_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
         if self.toSrid == self.fromSrid:
-            geomCols = """punkt_i_omrade_json AS punkt_i_omrade,
-                       bbox_json AS avgrensningsboks"""
+            geomCols = """kommune.punkt_i_omraade_json AS punkt_i_omrade,
+                       kommune.bbox_json AS avgrensningsboks"""
         else:
-            geomCols = """ST_AsGeoJSON(ST_Transform(punkt_i_omrade, {0}), 15, 2)::json AS punkt_i_omrade,
-                    ST_AsGeoJSON(ST_Envelope(ST_Transform(omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
+            geomCols = """ST_AsGeoJSON(ST_Transform(kommune.punkt_i_omraade, {0}), 15, 2)::json AS punkt_i_omrade,
+                    ST_AsGeoJSON(ST_Envelope(ST_Transform(kommune.omraade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
         return """SELECT kommunenummer,
                     samiskforvaltningsomrade,
                     fylkesnavn,
@@ -173,16 +173,16 @@ class Queries:
                     navn_pri_3_sprak,
                     navn_norsk as "kommunenavnNorsk",
                     {1}
-                FROM matview_kommuner {0};""".format(where, geomCols)
+                FROM kommuneinfo.kommune {0};""".format(where, geomCols)
 
     def kom_polygon(self, where=''):
         return """SELECT kommunenummer,
                         navn_pri_1 AS kommunenavn,
-                        ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
-                    FROM matview_kommuner {0};""".format(where, self.toSrid)
+                        ST_AsGeoJSON(ST_Transform(kommune.omraade, {1}), 15, 2)::json AS omrade
+                    FROM kommuneinfo.kommune {0};""".format(where, self.toSrid)
 
     def fylke_polygon(self, where=''):
         return """SELECT fylkesnummer,
                         navn_pri_1 AS fylkesnavn,
-                        ST_AsGeoJSON(ST_Transform(omrade, {1}), 15, 2)::json AS omrade
-                    FROM matview_fylker {0};""".format(where, self.toSrid)
+                        ST_AsGeoJSON(ST_Transform(fylke.omrade, {1}), 15, 2)::json AS omrade
+                    FROM kommuneinfo.fylke {0};""".format(where, self.toSrid)

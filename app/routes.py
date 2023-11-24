@@ -457,9 +457,11 @@ def get_kommune_for_point():
     nord, ost = Validate().lat_lon(request.args.get('nord'), request.args.get('ost'))
     srid = Validate().srid(request.args.get('koordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries().kom_fylke_enkel(
-        where="""WHERE ST_Within(ST_Transform(ST_GeomFromText('POINT(%s %s)', %s), %s), omrade)""")
-    queryInput = ost, nord, srid, cf.defSrid
+
+    queryInput = ost, nord, srid, cf.default_kommuneomraade_srid
+
+    where = """WHERE ST_Within(ST_Transform(ST_GeomFromText('POINT(%s %s)', %s), %s), kommune.omraade)"""
+    query = db.Queries().kom_fylke_enkel(where)
     dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, queryInput)[0]
     filterModel = filter_model(md.KommuneFylkeEnkel, filters)
