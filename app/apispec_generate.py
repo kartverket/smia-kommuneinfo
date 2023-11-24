@@ -7,11 +7,11 @@ import os
 from apispec import APISpec
 from apispec_webframeworks.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
-
+import config as cf
 
 is_dev = True if os.environ.get('FLASK_DEBUG') == "1" else False
 
-host = "localhost:5000" if is_dev else "ws.geonorge.no"
+host = cf.app_ingress
 basepath = "/" if is_dev else "/kommuneinfo/v1"
 scheme = "http" if is_dev else "https"
 
