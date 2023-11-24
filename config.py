@@ -1,8 +1,8 @@
 import os
 
-db_user = os.environ.get('KOMMUNEINFO_KOMMUNEINFO_DB_USER', default='kominfo')
-db_password = os.environ.get('KOMMUNEINFO_KOMMUNEINFO_DB_PASSWORD', default="kominfo")
-db_uri = os.environ.get('KOMMUNEINFO_KOMMUNEINFO_DB_URI',
+db_user = os.environ.get('KOMMUNEINFO_DB_USER', default='kominfo')
+db_password = os.environ.get('KOMMUNEINFO_DB_PASSWORD', default="kominfo")
+db_uri = os.environ.get('KOMMUNEINFO_DB_URI',
                         default="postgresql://localhost:5430/kominfo")
 app_ingress = os.environ.get("KOMMUNEINFO_INGRESS", default="localhost:5000")
 
