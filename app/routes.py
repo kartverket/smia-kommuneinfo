@@ -15,10 +15,24 @@ import config as cf
 from app import database as db
 from app import apispec_generate
 
-
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.WARNING)
 
+class PrefixMiddleware(object):
+    def __init__(self, app, prefix=''):
+        self.app = app
+        self.prefix = prefix
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
+            environ['SCRIPT_NAME'] = self.prefix
+            return self.app(environ, start_response)
+        else:
+            start_response('404', [('Content-Type', 'text/plain')])
+            return ["This route does not exist.".encode()]
+
+app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/kommuneinfo/v1')
 
 class Validate:
 
@@ -539,3 +553,4 @@ def openapi_json():
 @app.route('/index.html')
 def swagger_ui():
     return render_template('swagger-ui.html')
+
