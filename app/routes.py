@@ -216,8 +216,9 @@ def get_kommuner_in_fylke(fylkesnummer):
                 description: OK
                 schema: FylkerKommunerEnkel
     """
+    print(request.args.to_dict())
     validParams = deserialize_input_params(request.args.to_dict(),
-                                           md.ParamsStandard())
+                                           md.ParamsStandardKoordsys())
     fylkesnummer = Validate().regionsnummer(fylkesnummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
