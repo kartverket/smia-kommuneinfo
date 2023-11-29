@@ -92,9 +92,9 @@ class DbConn():
 
 class Queries:
 
-    def __init__(self, toSrid=cf.defSrid, fromSrid=cf.defSrid):
+    def __init__(self, toSrid=cf.defSrid, defaultSrid=cf.defSrid):
         self.toSrid = toSrid
-        self.fromSrid = fromSrid
+        self.defaultSrid = defaultSrid
 
     def kom_fylke_enkel(self, where=''):
         return """SELECT kommunenummer,
@@ -110,7 +110,7 @@ class Queries:
                   FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_illustrasjonskart(self):
-        if self.toSrid == 4258:
+        if self.toSrid == self.defaultSrid:
             return """SELECT featurecollection
                         FROM kommuneinfo.illustrasjonskart_json;"""
         return """SELECT jsonb_build_object(
@@ -120,7 +120,7 @@ class Queries:
                 FROM (
                   SELECT jsonb_build_object(
                     'type',       'Feature',
-                    'geometry',   ST_AsGeoJSON(ST_Transform(kommune.omraade, {0}), 3, 2)::jsonb,
+                    'geometry',   ST_AsGeoJSON(ST_Transform(omrade, {0}), 3, 2)::jsonb,
                     'properties', jsonb_build_object('kommunenummer', kommunenummer,
                                                      'kommunenavn', kommunenavn )
                   ) AS feature
@@ -133,7 +133,7 @@ class Queries:
 
     def fylke_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
-        if self.toSrid == self.fromSrid:
+        if self.toSrid == self.defaultSrid:
             geomCols = """bbox_json AS avgrensningsboks"""
         else:
             geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(fylke.omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
@@ -154,7 +154,7 @@ class Queries:
 
     def kom_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
-        if self.toSrid == self.fromSrid:
+        if self.toSrid == self.defaultSrid:
             geomCols = """kommune.punkt_i_omraade_json AS punkt_i_omrade,
                        kommune.bbox_json AS avgrensningsboks"""
         else:
