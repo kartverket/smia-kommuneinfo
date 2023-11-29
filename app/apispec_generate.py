@@ -12,7 +12,7 @@ import config as cf
 is_dev = True if os.environ.get('FLASK_DEBUG') == "1" else False
 
 host = cf.app_ingress
-basepath = "/" if is_dev else "/kommuneinfo/v1"
+basepath = "/kommuneinfo/v1"
 scheme = "http" if is_dev else "https"
 
 spec = APISpec(

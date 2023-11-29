@@ -18,6 +18,7 @@ from app import apispec_generate
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.WARNING)
 
+
 class PrefixMiddleware(object):
     def __init__(self, app, prefix=''):
         self.app = app
@@ -32,7 +33,9 @@ class PrefixMiddleware(object):
             start_response('404', [('Content-Type', 'text/plain')])
             return ["This route does not exist.".encode()]
 
+
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/kommuneinfo/v1')
+
 
 class Validate:
 
@@ -216,7 +219,6 @@ def get_kommuner_in_fylke(fylkesnummer):
                 description: OK
                 schema: FylkerKommunerEnkel
     """
-    print(request.args.to_dict())
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
     fylkesnummer = Validate().regionsnummer(fylkesnummer)
@@ -473,7 +475,7 @@ def get_kommune_for_point():
     srid = Validate().srid(request.args.get('koordsys'))
     filters = create_filtering_dict(validParams)
 
-    queryInput = ost, nord, srid, cf.default_kommuneomraade_srid
+    queryInput = ost, nord, srid, cf.defSrid
 
     where = """WHERE ST_Within(ST_Transform(ST_GeomFromText('POINT(%s %s)', %s), %s), kommune.omraade)"""
     query = db.Queries().kom_fylke_enkel(where)
@@ -554,4 +556,3 @@ def openapi_json():
 @app.route('/index.html')
 def swagger_ui():
     return render_template('swagger-ui.html')
-
