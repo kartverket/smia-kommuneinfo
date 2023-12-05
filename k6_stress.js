@@ -5,8 +5,8 @@ const getRandom = (list) => {
   return list[Math.floor(Math.random() * list.length)];
 };
 
-//const BASE_URL = "https://kommuneinfo.dev.skip.statkart.no";
-const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = "https://kommuneinfo.dev.skip.statkart.no";
+// const BASE_URL = "http://127.0.0.1:5000";
 
 const tests = [
   {
@@ -63,7 +63,25 @@ const tests = [
   },
 ];
 
+const requests = open(
+  "/Users/william/Documents/Projects/Smia/smia-kommuneinfo/requests/requests_parsed.txt"
+)
+  .split("\n")
+  .splice(2000, 1000);
+
+export let options = {
+  scenarios: {
+    stress_test: {
+      executor: "per-vu-iterations",
+      vus: requests.length,
+      iterations: 1,
+    },
+  },
+};
+
 export default function () {
-  let randomTest = getRandom(tests);
-  http.get(`${BASE_URL}${randomTest.url}`);
+  // let randomTest = getRandom(tests);
+
+  let test = requests[__VU - 1];
+  http.get(`${BASE_URL}${test}`);
 }
