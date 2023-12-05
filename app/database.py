@@ -86,8 +86,10 @@ class DbConn():
 
     def __del__(self):
         """close connection if not already done"""
-        if self.conn:
+        try:
             self.conn.close()
+        except AttributeError:
+            return
 
 
 class Queries:

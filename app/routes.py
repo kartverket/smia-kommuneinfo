@@ -7,6 +7,8 @@ TODO:
 import locale
 import logging
 
+from marshmallow import ValidationError
+
 from flask import request, jsonify, abort, make_response, render_template
 
 from app import app
@@ -137,7 +139,7 @@ def deserialize_input_params(inputParams, modelObj):
         return {}
     try:
         deserializedParams = modelObj.load(inputParams)
-    except md.ValidationError as e:
+    except ValidationError as e:
         abort(400, e.messages)
     logging.info('deserializedParams:  \n %s' % deserializedParams)
     return deserializedParams
