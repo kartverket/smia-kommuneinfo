@@ -7,6 +7,8 @@ TODO:
 import locale
 import logging
 
+from marshmallow import ValidationError
+
 from flask import request, jsonify, abort, make_response, render_template
 
 from app import app
@@ -137,8 +139,9 @@ def deserialize_input_params(inputParams, modelObj):
         return {}
     try:
         deserializedParams = modelObj.load(inputParams)
-    except md.ValidationError as e:
-        abort(400, e.messages)
+    except ValidationError:
+        abort(400, "Query params: {} ble ikke kjent igjen, gyldige paramtere er: {}".format(list(inputParams.keys()),
+                                                                                            list(modelObj.dump_fields.keys())))
     logging.info('deserializedParams:  \n %s' % deserializedParams)
     return deserializedParams
 

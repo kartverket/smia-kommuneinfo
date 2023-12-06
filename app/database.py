@@ -14,9 +14,16 @@ class DbConn():
     """Connect to the db, perform a query and format the response"""
 
     def __init__(self):
-        self.conn = psycopg2.connect(
-            dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
-        self.cur = self.conn.cursor()
+        try:
+            self.conn = psycopg2.connect(
+                dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
+            self.cur = self.conn.cursor()
+        except psycopg2.errors.TooManyConnections:
+            abort(500, "Databasen opplever for mange tilkoblinger, vennligst vent litt.")
+        except Exception as e:
+            logging.error(
+                "Exception under databaseconnection: {}".format(e.message))
+            abort(500, "Noe gikk galt, prøv igjen senere")
 
     def perform_query_format_response(self, query, userInput=False):
         queryResult = self.perform_query(query, userInput)
@@ -86,8 +93,10 @@ class DbConn():
 
     def __del__(self):
         """close connection if not already done"""
-        if self.conn:
+        try:
             self.conn.close()
+        except AttributeError:
+            return
 
 
 class Queries:
