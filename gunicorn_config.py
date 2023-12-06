@@ -1,6 +1,7 @@
 import datetime
 import logging
 import sys
+import config as cf
 
 import json_log_formatter
 
@@ -60,41 +61,43 @@ class JsonErrorFormatter(json_log_formatter.JSONFormatter):
         return payload
 
 
+is_dev = cf.is_dev
 # Ensure the two named loggers that Gunicorn uses are configured to use a custom
 # JSON formatter.
-logconfig_dict = {
-    "version": 1,
-    "formatters": {
-        "json_request": {
-            "()": JsonRequestFormatter,
+if not is_dev:
+    logconfig_dict = {
+        "version": 1,
+        "formatters": {
+            "json_request": {
+                "()": JsonRequestFormatter,
+            },
+            "json_error": {
+                "()": JsonErrorFormatter,
+            },
         },
-        "json_error": {
-            "()": JsonErrorFormatter,
+        "handlers": {
+            "json_request": {
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+                "formatter": "json_request",
+            },
+            "json_error": {
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+                "formatter": "json_error",
+            },
         },
-    },
-    "handlers": {
-        "json_request": {
-            "class": "logging.StreamHandler",
-            "stream": sys.stdout,
-            "formatter": "json_request",
+        "root": {"level": "INFO", "handlers": []},
+        "loggers": {
+            "gunicorn.access": {
+                "level": "INFO",
+                "handlers": ["json_request"],
+                "propagate": False,
+            },
+            "gunicorn.error": {
+                "level": "INFO",
+                "handlers": ["json_error"],
+                "propagate": False,
+            },
         },
-        "json_error": {
-            "class": "logging.StreamHandler",
-            "stream": sys.stdout,
-            "formatter": "json_error",
-        },
-    },
-    "root": {"level": "INFO", "handlers": []},
-    "loggers": {
-        "gunicorn.access": {
-            "level": "INFO",
-            "handlers": ["json_request"],
-            "propagate": False,
-        },
-        "gunicorn.error": {
-            "level": "INFO",
-            "handlers": ["json_error"],
-            "propagate": False,
-        },
-    },
-}
+    }

@@ -9,11 +9,9 @@ from apispec_webframeworks.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 import config as cf
 
-is_dev = True if os.environ.get('FLASK_DEBUG') == "1" else False
-
 host = cf.app_ingress
 basepath = "/kommuneinfo/v1"
-scheme = "http" if is_dev else "https"
+scheme = "http" if cf.is_dev else "https"
 
 spec = APISpec(
     title='Åpent API fra Kartverket for administrative enheter.',
