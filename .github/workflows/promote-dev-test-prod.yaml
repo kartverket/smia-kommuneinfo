@@ -13,6 +13,7 @@ jobs:
       PAT_TOKEN: ${{ secrets.PAT_ARGOCD }}
 
   deploy-argo-prod:
+    needs: ["deploy-argo-test"]
     uses: kartverket/smia-apps/.github/workflows/promote-app.yml@main
     with:
       application: kommuneinfo
