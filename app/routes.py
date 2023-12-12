@@ -10,6 +10,7 @@ import logging
 from marshmallow import ValidationError
 
 from flask import request, jsonify, abort, make_response, render_template
+from prometheus_flask_exporter import PrometheusMetrics
 
 from app import app
 from app import models as md
@@ -35,6 +36,8 @@ class PrefixMiddleware(object):
             start_response('404', [('Content-Type', 'text/plain')])
             return ["This route does not exist.".encode()]
 
+
+metrics = PrometheusMetrics(app)
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/kommuneinfo/v1')
 
