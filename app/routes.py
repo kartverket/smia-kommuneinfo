@@ -63,12 +63,16 @@ class Validate:
             abort(400, "Feil i parameterene.")
 
     def search_string(self, search):
-        invalidChars = ('"', "'", ";", "/", '\\', '=')
-        noWildcard = search.replace('*', '')
-        if len(noWildcard) <= 1:
-            abort(400, 'Søkestreng er for kort.')
-        elif any((char in invalidChars) for char in noWildcard):
-            abort(400, 'Ugyldige tegn i søkestreng.')
+        invalid_chars = ['"', "'", ";", "/", '\\', '=']
+        if search is None:
+            abort(400, 'Du må angi en søkestreng.')
+
+        search_no_wildcard = search.replace('*', '')
+        if len(search_no_wildcard) <= 1:
+            abort(400, 'Søkestreng er for kort. Du må bruke minst 2 tegn i søkestrengen. Wildcards regnes ikke på lengden til søkestrengen.')
+        elif any((char in invalid_chars) for char in search_no_wildcard):
+            abort(400, 'Ugyldige tegn i søkestreng. Du kan ikke bruke følgende tegn: {}'.format(
+                ", ".join(invalid_chars)))
         return search
 
     def regionsnummer(self, nummer):
@@ -236,7 +240,7 @@ def get_kommuner_in_fylke(fylkesnummer):
     kommOutDict = {}
     kommOutDict['kommuner'] = order_fields(kommResult)
 
-    query2 = db.Queries(toSrid=outSrid).fylke_full(
+    query2 = db.Queries(to_srid=outSrid).fylke_full(
         where="WHERE fylkesnummer = %s")
     fylkeResult = dbObj.perform_query_format_response(query2, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerKommunerEnkel, filters)
@@ -267,7 +271,7 @@ def get_fylke_polygon(fylkesnummer):
     fylkesnummer = Validate().regionsnummer(fylkesnummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).fylke_polygon(
+    query = db.Queries(to_srid=outSrid).fylke_polygon(
         where="WHERE fylkesnummer = %s")
     output = db.DbConn().perform_query_format_response(query, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
@@ -300,13 +304,13 @@ def fylker_kommuner_full():
     filters = create_filtering_dict(validParams)
     dbObj = db.DbConn()
     # get kommuner
-    query = db.Queries(toSrid=outSrid).kom_full()
+    query = db.Queries(to_srid=outSrid).kom_full()
     kommResult = dbObj.perform_query_format_response(query)
     Validate().orderByField(orderKomBy, kommResult)
     kommOutDict = {}
     kommOutDict['kommuner'] = sorting_list_of_dicts(kommResult, orderKomBy)
     # get fylker
-    query2 = db.Queries(toSrid=outSrid).fylke_full()
+    query2 = db.Queries(to_srid=outSrid).fylke_full()
     fylkeResult = dbObj.perform_query_format_response(query2)
     Validate().orderByField(orderFylkBy, fylkeResult)
     filterModel = filter_model(md.FylkerKommunerFull, filters)
@@ -362,7 +366,7 @@ def get_kommuner_illustrasjonskart():
                                            md.ParamsSridOut())
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).kom_illustrasjonskart()
+    query = db.Queries(to_srid=outSrid).kom_illustrasjonskart()
     dbObj = db.DbConn()
     output = dbObj.perform_query_get_response(query)[0][0]
     filterModel = filter_model(md.geoJsonFeatureCollection, filters)
@@ -391,7 +395,7 @@ def get_kommune(kommunenummer):
     knr = Validate().regionsnummer(kommunenummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).kom_full(
+    query = db.Queries(to_srid=outSrid).kom_full(
         where="WHERE kommunenummer = %s")
     dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, knr)[0]
@@ -452,7 +456,7 @@ def get_kommune_polygon(kommunenummer):
     knr = Validate().regionsnummer(kommunenummer)
     outSrid = Validate().srid(request.args.get('utkoordsys'))
     filters = create_filtering_dict(validParams)
-    query = db.Queries(toSrid=outSrid).kom_polygon(
+    query = db.Queries(to_srid=outSrid).kom_polygon(
         where="WHERE kommunenummer = %s")
     dbObj = db.DbConn()
     output = dbObj.perform_query_format_response(query, knr)[0]
@@ -505,33 +509,31 @@ def search_by_kommunenavn():
             200:
                 description: OK
                 schema: NavnSokKommune
+            404:
+                description: Kunne ikke finne kommunen du søkte etter
     """
-    validParams = deserialize_input_params(request.args.to_dict(),
-                                           md.ParamsNavnSok())
-    sokString = Validate().search_string(request.args.get('knavn'))
-    outSrid = Validate().srid(request.args.get('utkoordsys'))
-    filters = create_filtering_dict(validParams)
-    sokNoWildcard = sokString.replace('*', '')
-    if sokString.startswith('*') and sokString.endswith('*'):
-        likeString = """LIKE LOWER('%%' || %s || '%%') """
-    elif sokString.startswith('*'):
-        likeString = """LIKE LOWER('%%' || %s) """  # %% escapes % in postgresql
-    elif sokString.endswith('*'):
-        likeString = """LIKE LOWER(%s || '%%') """
-    else:
-        likeString = """LIKE LOWER(%s) """
-    query = db.Queries(toSrid=outSrid).kom_full(where='''WHERE LOWER(navn_pri_1) {0}
-                                       OR LOWER(navn_pri_2) {0}
-                                        OR LOWER(navn_pri_3) {0}'''.format(likeString))
-    dbObj = db.DbConn()
-    userInput = sokNoWildcard, sokNoWildcard, sokNoWildcard
-    output = dbObj.perform_query_format_response(query, userInput)
-    filterModel = filter_model(md.NavnSokKommune, filters)
-    sortedOutput = order_fields(output)
-    finalRes = {}
-    finalRes['antallTreff'] = len(sortedOutput)
-    finalRes['kommuner'] = sortedOutput
-    return return_jsonify_dump(filterModel, finalRes, many=False)
+    valid_params = deserialize_input_params(request.args.to_dict(),
+                                            md.ParamsNavnSok())
+    filters = create_filtering_dict(valid_params)
+
+    out_srid = Validate().srid(request.args.get('utkoordsys'))
+    user_search = Validate().search_string(request.args.get('knavn'))
+    search_with_psql_wildcard = user_search.replace('*', '_')
+    where_for_query = """   WHERE
+                            LOWER(navn_pri_1) LIKE LOWER(%s) OR
+                            LOWER(navn_pri_2) LIKE LOWER(%s) OR
+                            LOWER(navn_pri_3) LIKE LOWER(%s)
+                      """
+    query = db.Queries(to_srid=out_srid).kom_full(where_for_query)
+    db_connection = db.DbConn()
+    user_input = search_with_psql_wildcard, search_with_psql_wildcard, search_with_psql_wildcard
+    output = db_connection.perform_query_format_response(query, user_input)
+    filtered_model = filter_model(md.NavnSokKommune, filters)
+    sorted_output = order_fields(output)
+    final_res = {}
+    final_res['antallTreff'] = len(sorted_output)
+    final_res['kommuner'] = sorted_output
+    return return_jsonify_dump(filtered_model, final_res, many=False)
 
 
 spec = apispec_generate.spec

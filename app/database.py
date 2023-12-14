@@ -101,9 +101,9 @@ class DbConn():
 
 class Queries:
 
-    def __init__(self, toSrid=cf.defSrid, defaultSrid=cf.defSrid):
-        self.toSrid = toSrid
-        self.defaultSrid = defaultSrid
+    def __init__(self, to_srid=cf.defSrid, default_srid=cf.defSrid):
+        self.to_srid = to_srid
+        self.default_srid = default_srid
 
     def kom_fylke_enkel(self, where=''):
         return """SELECT kommunenummer,
@@ -119,7 +119,7 @@ class Queries:
                   FROM kommuneinfo.kommune {0};""".format(where)
 
     def kom_illustrasjonskart(self):
-        if self.toSrid == self.defaultSrid:
+        if self.to_srid == self.default_srid:
             return """SELECT featurecollection
                         FROM kommuneinfo.illustrasjonskart_json;"""
         return """SELECT jsonb_build_object(
@@ -134,7 +134,7 @@ class Queries:
                                                      'kommunenavn', kommunenavn )
                   ) AS feature
                   FROM (
-                    SELECT * FROM kommuneinfo.illustrasjonskart) inputs) features;""".format(self.toSrid)
+                    SELECT * FROM kommuneinfo.illustrasjonskart) inputs) features;""".format(self.to_srid)
 
     def fylke_enkel(self, where=''):
         return """SELECT fylkesnummer, navn_pri_1 as fylkesnavn
@@ -142,11 +142,11 @@ class Queries:
 
     def fylke_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
-        if self.toSrid == self.defaultSrid:
+        if self.to_srid == self.default_srid:
             geomCols = """bbox_json AS avgrensningsboks"""
         else:
             geomCols = """ST_AsGeoJSON(ST_Envelope(ST_Transform(fylke.omrade, {0})), 15, 2)::json AS avgrensningsboks""".format(
-                self.toSrid)
+                self.to_srid)
         return """SELECT fylkesnummer,
                     navn_pri_1 as fylkesnavn,
                     {1}
@@ -163,12 +163,12 @@ class Queries:
 
     def kom_full(self, where=''):
         # save about 50 milliseconds by retrieving the prepared JSON-rows
-        if self.toSrid == self.defaultSrid:
+        if self.to_srid == self.default_srid:
             geomCols = """kommune.punkt_i_omraade_json AS punkt_i_omrade,
                        kommune.bbox_json AS avgrensningsboks"""
         else:
             geomCols = """ST_AsGeoJSON(ST_Transform(kommune.punkt_i_omraade, {0}), 15, 2)::json AS punkt_i_omrade,
-                    ST_AsGeoJSON(ST_Envelope(ST_Transform(kommune.omraade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.toSrid)
+                    ST_AsGeoJSON(ST_Envelope(ST_Transform(kommune.omraade, {0})), 15, 2)::json AS avgrensningsboks""".format(self.to_srid)
         return """SELECT kommunenummer,
                     samiskforvaltningsomrade,
                     fylkesnavn,
@@ -188,10 +188,10 @@ class Queries:
         return """SELECT kommunenummer,
                         navn_pri_1 AS kommunenavn,
                         ST_AsGeoJSON(ST_Transform(kommune.omraade, {1}), 15, 2)::json AS omrade
-                    FROM kommuneinfo.kommune {0};""".format(where, self.toSrid)
+                    FROM kommuneinfo.kommune {0};""".format(where, self.to_srid)
 
     def fylke_polygon(self, where=''):
         return """SELECT fylkesnummer,
                         navn_pri_1 AS fylkesnavn,
                         ST_AsGeoJSON(ST_Transform(fylke.omrade, {1}), 15, 2)::json AS omrade
-                    FROM kommuneinfo.fylke {0};""".format(where, self.toSrid)
+                    FROM kommuneinfo.fylke {0};""".format(where, self.to_srid)
