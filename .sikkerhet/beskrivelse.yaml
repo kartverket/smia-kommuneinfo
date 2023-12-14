@@ -1,5 +1,5 @@
 version: 2.0
 organization: Eiendom
-product: Kommuneinfo-api på GeoNorge
+product: Kommuneinfo API
 repo_types: [PublicApi]
 platforms: [SKIP]
