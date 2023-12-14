@@ -520,10 +520,10 @@ def search_by_kommunenavn():
     user_search = Validate().search_string(request.args.get('knavn'))
     search_with_psql_wildcard = user_search.replace('*', '_')
     where_for_query = """   WHERE
-                            LOWER(navn_pri_1) LIKE LOWER('{0}') OR
-                            LOWER(navn_pri_2) LIKE LOWER('{0}') OR
-                            LOWER(navn_pri_3) LIKE LOWER('{0}')
-                      """.format(search_with_psql_wildcard)
+                            LOWER(navn_pri_1) LIKE LOWER(%s) OR
+                            LOWER(navn_pri_2) LIKE LOWER(%s) OR
+                            LOWER(navn_pri_3) LIKE LOWER(%s)
+                      """
     query = db.Queries(to_srid=out_srid).kom_full(where_for_query)
     db_connection = db.DbConn()
     user_input = search_with_psql_wildcard, search_with_psql_wildcard, search_with_psql_wildcard
