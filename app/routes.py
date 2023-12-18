@@ -39,7 +39,7 @@ class PrefixMiddleware(object):
 
 metrics = PrometheusMetrics(app)
 
-app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/kommuneinfo/v1')
+app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
 
 class Validate:

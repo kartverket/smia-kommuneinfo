@@ -7,6 +7,7 @@ db_uri = os.environ.get('KOMMUNEINFO_DB_URI',
 app_ingress = os.environ.get("KOMMUNEINFO_INGRESS", default="localhost:5000")
 
 is_dev = True if app_ingress == "localhost:5000" else False
+basepath = "/kommuneinfo/v1"
 defSrid = 4258
 set_json_as_ascii = False
 locale_choice = 'no_NO.UTF-8'
