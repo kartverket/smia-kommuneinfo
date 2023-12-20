@@ -50,16 +50,6 @@ def before_request():
     generalized_path = re.sub(r'<[^>]*>', '{param}', rule_pattern)  # Replace dynamic parts with {param}
     request.generalized_path = generalized_path
 
-@app.after_request
-def after_request(response):
-    # Increment the counter for the generalized path
-    metrics.counter(
-        'kommuneinfo_http_request_total', 
-        'Total requests by method, endpoint', 
-        labels={'method': request.method, 'generalized_endpoint': request.generalized_path, 'endpoint': request.path}
-    ).inc()
-    return response
-
 
 class Validate:
 
@@ -232,6 +222,11 @@ def get_fylker():
 
 
 @app.route('/fylker/<string:fylkesnummer>')
+@metrics.do_not_track()
+@metrics.summary('requests_by_status', 'Request latencies by status',
+                 labels={'status': lambda r: r.status_code})
+@metrics.histogram('requests_by_status_and_path', 'Request latencies by status and path',
+                   labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path})
 def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
     ---
@@ -296,8 +291,6 @@ def get_fylke_polygon(fylkesnummer):
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
 
-
-@app.route('/fylkerKommuner')
 @app.route('/fylkerkommuner')
 def fylker_kommuner_full():
     """Full info om alle fylker og alle kommuner
