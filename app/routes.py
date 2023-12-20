@@ -54,7 +54,7 @@ def before_request():
 def after_request(response):
     # Increment the counter for the generalized path
     metrics.counter(
-        'flask_http_request_total', 
+        'kommuneinfo_http_request_total', 
         'Total requests by method, endpoint', 
         labels={'method': request.method, 'generalized_endpoint': request.generalized_path, 'endpoint': request.path}
     ).inc()
