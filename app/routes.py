@@ -40,12 +40,12 @@ class PrefixMiddleware(object):
 
 metrics = PrometheusMetrics(app)
 
-by_status_and_path = metrics.histogram(
-    'requests_by_status_and_path', 'Request latencies by status and path',
-    labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path}
+metrics.register_default(
+    metrics.counter(
+        'status_and_path', 'Request count by status and path',
+        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+    )
 )
-by_status = metrics.summary('requests_by_status', 'Request latencies by status',
-                 labels={'status': lambda r: r.status_code})
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
