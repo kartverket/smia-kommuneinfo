@@ -6,6 +6,7 @@ TODO:
 
 import locale
 import logging
+import re
 
 from marshmallow import ValidationError
 
@@ -20,6 +21,7 @@ from app import apispec_generate
 
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.WARNING)
+
 
 
 class PrefixMiddleware(object):
@@ -40,6 +42,23 @@ class PrefixMiddleware(object):
 metrics = PrometheusMetrics(app)
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
+
+@app.before_request
+def before_request():
+    # Capture the URL rule pattern instead of the actual request path
+    rule_pattern = request.url_rule.rule if request.url_rule else request.path
+    generalized_path = re.sub(r'<[^>]*>', '{param}', rule_pattern)  # Replace dynamic parts with {param}
+    request.generalized_path = generalized_path
+
+@app.after_request
+def after_request(response):
+    # Increment the counter for the generalized path
+    metrics.counter(
+        'flask_http_request_total', 
+        'Total requests by method, endpoint', 
+        labels={'method': request.method, 'generalized_endpoint': request.generalized_path, 'endpoint': request.path}
+    ).inc()
+    return response
 
 
 class Validate:
