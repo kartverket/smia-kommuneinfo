@@ -47,7 +47,7 @@ app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 def before_request():
     # Capture the URL rule pattern instead of the actual request path
     rule_pattern = request.url_rule.rule if request.url_rule else request.path
-    generalized_path = re.sub(r'<[^>]*>', '{param}', rule_pattern)  # Replace dynamic parts with {param}
+    generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)  # Replace dynamic parts with :id
     request.generalized_path = generalized_path
 
 
@@ -220,13 +220,16 @@ def get_fylker():
     sortedResult = order_fields(output)
     return return_jsonify_dump(filterModel, sortedResult, many=True)
 
+by_status_and_path = metrics.histogram(
+    'requests_by_status_and_path', 'Request latencies by status and path',
+    labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path}
+)
+by_status = metrics.summary('requests_by_status', 'Request latencies by status',
+                 labels={'status': lambda r: r.status_code})
 
 @app.route('/fylker/<string:fylkesnummer>')
-@metrics.do_not_track()
-@metrics.summary('requests_by_status', 'Request latencies by status',
-                 labels={'status': lambda r: r.status_code})
-@metrics.histogram('requests_by_status_and_path', 'Request latencies by status and path',
-                   labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path})
+@by_status_and_path
+@by_status
 def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
     ---
@@ -264,6 +267,8 @@ def get_kommuner_in_fylke(fylkesnummer):
 
 
 @app.route('/fylker/<string:fylkesnummer>/omrade')
+@by_status_and_path
+@by_status
 def get_fylke_polygon(fylkesnummer):
     """Områdepolygon for et spesifikt fylke
     ---
@@ -386,6 +391,8 @@ def get_kommuner_illustrasjonskart():
 
 
 @app.route('/kommuner/<string:kommunenummer>')
+@by_status_and_path
+@by_status
 def get_kommune(kommunenummer):
     """Full info om spesifikk kommune
     ---
@@ -447,6 +454,8 @@ def get_neighbouring_kommune(kommunenummer):
 
 
 @app.route('/kommuner/<string:kommunenummer>/omrade')
+@by_status_and_path
+@by_status
 def get_kommune_polygon(kommunenummer):
     """Områdepolygon for spesifikk kommune
     ---
