@@ -23,7 +23,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.WARNING)
 
 
-
 class PrefixMiddleware(object):
     def __init__(self, app, prefix=''):
         self.app = app
@@ -40,6 +39,13 @@ class PrefixMiddleware(object):
 
 
 metrics = PrometheusMetrics(app)
+
+by_status_and_path = metrics.histogram(
+    'requests_by_status_and_path', 'Request latencies by status and path',
+    labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path}
+)
+by_status = metrics.summary('requests_by_status', 'Request latencies by status',
+                 labels={'status': lambda r: r.status_code})
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
@@ -219,13 +225,6 @@ def get_fylker():
     filterModel = filter_model(md.FylkerEnkel, filters)
     sortedResult = order_fields(output)
     return return_jsonify_dump(filterModel, sortedResult, many=True)
-
-by_status_and_path = metrics.histogram(
-    'requests_by_status_and_path', 'Request latencies by status and path',
-    labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path}
-)
-by_status = metrics.summary('requests_by_status', 'Request latencies by status',
-                 labels={'status': lambda r: r.status_code})
 
 @app.route('/fylker/<string:fylkesnummer>')
 @by_status_and_path
