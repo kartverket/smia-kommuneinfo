@@ -19,8 +19,7 @@ import config as cf
 from app import database as db
 from app import apispec_generate
 
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
-                    level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 class PrefixMiddleware(object):
@@ -42,11 +41,13 @@ metrics = PrometheusMetrics(app)
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
+
 @app.before_request
 def create_generalized_path():
     # Capture the URL rule pattern instead of the actual request path
     rule_pattern = request.url_rule.rule if request.url_rule else request.path
-    generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)  # Replace dynamic parts with :id
+    # Replace dynamic parts with :id
+    generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)
     request.generalized_path = generalized_path
 
 
@@ -60,14 +61,14 @@ class Validate:
         try:
             return int(srid)
         except Exception as e:
-            logging.warning('Invalid epsg-parameter: %s' % e)
+            logger.warning('Invalid epsg-parameter: %s' % e)
             abort(400, "Feil i koordinatsystem-parameterene.")
 
     def lat_lon(self, lat, lon):
         try:
             return float(lat), float(lon)
         except Exception as e:
-            logging.warning('Invalid lat/lon-parameters: %s' % e)
+            logger.warning('Invalid lat/lon-parameters: %s' % e)
             abort(400, "Feil i parameterene.")
 
     def search_string(self, search):
@@ -89,18 +90,18 @@ class Validate:
             int(nummer)
             return nummer
         except Exception as e:
-            logging.warning('Invalid regionsnummer: %s' % e)
+            logger.warning('Invalid regionsnummer: %s' % e)
             abort(400, "Feil i parameterene.")
 
     def orderByField(self, valueToCheck, dictOrListOfDictsToCheckAgainst):
-        logging.info('value to check, orderby-field: "%s"' % valueToCheck)
+        logger.info('value to check, orderby-field: "%s"' % valueToCheck)
         if valueToCheck is None:
             return None
         if isinstance(dictOrListOfDictsToCheckAgainst, dict):
             listToCheck = list(dictOrListOfDictsToCheckAgainst.keys())
         else:  # if list of dicts
             listToCheck = list(dictOrListOfDictsToCheckAgainst[0].keys())
-        logging.info('liste å sjekke mot: %s' % listToCheck)
+        logger.info('liste å sjekke mot: %s' % listToCheck)
         if not any(valueToCheck == x for x in listToCheck):
             abort(make_response(jsonify(message="Ugyldige sorterings-parametere: %s."
                                         " Mulige årsaker: Skrivefeil. Sortering på flere felt er ikke tillatt."
@@ -130,7 +131,7 @@ def filter_model(modelMa, filterDict):
     try:
         return modelMa(**filterDict)
     except (ValueError, KeyError) as e:
-        logging.debug(e)
+        logger.debug(e)
         abort(400, "Feil i filtreringsparameter")
 
 
@@ -140,7 +141,7 @@ def create_filtering_dict(filterInput):
         inclDict = {'only': inp.split(',')}
     else:
         inclDict = {}
-    logging.debug('filtering Dict: %s' % inclDict)
+    logger.debug('filtering Dict: %s' % inclDict)
     return inclDict
 
 
@@ -149,7 +150,7 @@ def deserialize_input_params(inputParams, modelObj):
     inputParams should be a dict.
     modelObj should be a marshmallow model
     """
-    logging.info('input params to deserialize: %s' % inputParams)
+    logger.info('input params to deserialize: %s' % inputParams)
     if not inputParams:
         return {}
     try:
@@ -157,7 +158,7 @@ def deserialize_input_params(inputParams, modelObj):
     except ValidationError:
         abort(400, "Query params: {} ble ikke kjent igjen, gyldige paramtere er: {}".format(list(inputParams.keys()),
                                                                                             list(modelObj.dump_fields.keys())))
-    logging.info('deserializedParams:  \n %s' % deserializedParams)
+    logger.info('deserializedParams:  \n %s' % deserializedParams)
     return deserializedParams
 
 
@@ -165,19 +166,19 @@ def return_jsonify_dump(outSchema, outDict, many=False):
     try:
         return jsonify(outSchema.dump(outDict, many=many))
     except KeyError as e:
-        logging.debug(e)
+        logger.debug(e)
         abort(400, "Feil i filtreringsparameter. Husk på at underelementer må spesifiseres slik: filtrer=kommuner.kommunenummer")
 
 
 def sorting_list_of_dicts(listOfDicts, sortByKeyName):
-    logging.debug('Trying to sort "%s" by key "%s"' %
-                  (listOfDicts, sortByKeyName))
+    logger.debug('Trying to sort "%s" by key "%s"' %
+                 (listOfDicts, sortByKeyName))
     if sortByKeyName is None:
         return listOfDicts
     try:
         return sorted(listOfDicts, key=lambda t: locale.strxfrm(t[sortByKeyName]))
     except TypeError as e:
-        logging.warning(
+        logger.warning(
             'User probably tried to sort by key which points to a dict/list: %s' % e)
         abort(make_response(jsonify(
             message="Feil i sorterings-parameterene: %s. Felt må peke på verdi. " % sortByKeyName), 400))
@@ -185,7 +186,7 @@ def sorting_list_of_dicts(listOfDicts, sortByKeyName):
 
 def order_fields(result):
     orderBy = request.args.get('sorter')
-    logging.debug('sorter: %s' % orderBy)
+    logger.debug('sorter: %s' % orderBy)
     if orderBy:
         Validate().orderByField(orderBy, result)
         return sorting_list_of_dicts(result, orderBy)
@@ -218,6 +219,7 @@ def get_fylker():
     filterModel = filter_model(md.FylkerEnkel, filters)
     sortedResult = order_fields(output)
     return return_jsonify_dump(filterModel, sortedResult, many=True)
+
 
 @app.route('/fylker/<string:fylkesnummer>')
 def get_kommuner_in_fylke(fylkesnummer):
@@ -283,6 +285,7 @@ def get_fylke_polygon(fylkesnummer):
     output = db.DbConn().perform_query_format_response(query, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
+
 
 @app.route('/fylkerKommuner')
 @app.route('/fylkerkommuner')
@@ -575,6 +578,7 @@ def swagger_ui():
 metrics.register_default(
     metrics.counter(
         'flask_http_request_status_and_path', 'Request count by status and path',
-        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+        labels={'status': lambda r: r.status_code,
+                'path': lambda: request.generalized_path, 'resource': lambda: request.path}
     )
 )
