@@ -11,8 +11,6 @@ import re
 from marshmallow import ValidationError
 
 from flask import request, jsonify, abort, make_response, render_template
-from prometheus_flask_exporter import PrometheusMetrics
-
 from app import app
 from app import models as md
 import config as cf
@@ -22,39 +20,6 @@ from app import apispec_generate
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.WARNING)
 
-
-class PrefixMiddleware(object):
-    def __init__(self, app, prefix=''):
-        self.app = app
-        self.prefix = prefix
-
-    def __call__(self, environ, start_response):
-        if environ['PATH_INFO'].startswith(self.prefix):
-            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
-            environ['SCRIPT_NAME'] = self.prefix
-            return self.app(environ, start_response)
-        else:
-            start_response('404', [('Content-Type', 'text/plain')])
-            return ["This route does not exist.".encode()]
-
-
-metrics = PrometheusMetrics(app)
-
-metrics.register_default(
-    metrics.counter(
-        'status_and_path', 'Request count by status and path',
-        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
-    )
-)
-
-app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
-
-@app.before_request
-def before_request():
-    # Capture the URL rule pattern instead of the actual request path
-    rule_pattern = request.url_rule.rule if request.url_rule else request.path
-    generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)  # Replace dynamic parts with :id
-    request.generalized_path = generalized_path
 
 
 class Validate:
@@ -227,8 +192,6 @@ def get_fylker():
     return return_jsonify_dump(filterModel, sortedResult, many=True)
 
 @app.route('/fylker/<string:fylkesnummer>')
-@by_status_and_path
-@by_status
 def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
     ---
@@ -266,8 +229,6 @@ def get_kommuner_in_fylke(fylkesnummer):
 
 
 @app.route('/fylker/<string:fylkesnummer>/omrade')
-@by_status_and_path
-@by_status
 def get_fylke_polygon(fylkesnummer):
     """Områdepolygon for et spesifikt fylke
     ---
@@ -390,8 +351,6 @@ def get_kommuner_illustrasjonskart():
 
 
 @app.route('/kommuner/<string:kommunenummer>')
-@by_status_and_path
-@by_status
 def get_kommune(kommunenummer):
     """Full info om spesifikk kommune
     ---
@@ -453,8 +412,6 @@ def get_neighbouring_kommune(kommunenummer):
 
 
 @app.route('/kommuner/<string:kommunenummer>/omrade')
-@by_status_and_path
-@by_status
 def get_kommune_polygon(kommunenummer):
     """Områdepolygon for spesifikk kommune
     ---
