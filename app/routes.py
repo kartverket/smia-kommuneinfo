@@ -43,7 +43,7 @@ metrics = PrometheusMetrics(app)
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
 @app.before_request
-def before_request():
+def create_generalized_path():
     # Capture the URL rule pattern instead of the actual request path
     rule_pattern = request.url_rule.rule if request.url_rule else request.path
     generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)  # Replace dynamic parts with :id
@@ -573,7 +573,7 @@ def swagger_ui():
 
 metrics.register_default(
     metrics.counter(
-        'status_and_path', 'Request count by status and path',
+        'flask_http_request_status_and_path', 'Request count by status and path',
         labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
     )
 )
