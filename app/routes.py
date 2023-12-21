@@ -596,3 +596,10 @@ metrics.register_default(
                 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
     )
 )
+
+metrics.register_default(
+    metrics.gauge(
+        'flask_http_request_time_gauge', 'Time used on requests',
+        labels={'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+    )
+)
