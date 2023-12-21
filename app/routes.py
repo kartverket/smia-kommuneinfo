@@ -6,6 +6,7 @@ TODO:
 
 import locale
 import logging
+import re
 
 from marshmallow import ValidationError
 
@@ -40,6 +41,13 @@ class PrefixMiddleware(object):
 metrics = PrometheusMetrics(app)
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
+
+@app.before_request
+def create_generalized_path():
+    # Capture the URL rule pattern instead of the actual request path
+    rule_pattern = request.url_rule.rule if request.url_rule else request.path
+    generalized_path = re.sub(r'<[^>]*>', ':id', rule_pattern)  # Replace dynamic parts with :id
+    request.generalized_path = generalized_path
 
 
 class Validate:
@@ -211,7 +219,6 @@ def get_fylker():
     sortedResult = order_fields(output)
     return return_jsonify_dump(filterModel, sortedResult, many=True)
 
-
 @app.route('/fylker/<string:fylkesnummer>')
 def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
@@ -276,7 +283,6 @@ def get_fylke_polygon(fylkesnummer):
     output = db.DbConn().perform_query_format_response(query, fylkesnummer)[0]
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
-
 
 @app.route('/fylkerKommuner')
 @app.route('/fylkerkommuner')
@@ -564,3 +570,11 @@ def openapi_json():
 @app.route('/index.html')
 def swagger_ui():
     return render_template('swagger-ui.html')
+
+
+metrics.register_default(
+    metrics.counter(
+        'flask_http_request_status_and_path', 'Request count by status and path',
+        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+    )
+)
