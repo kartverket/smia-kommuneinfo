@@ -105,6 +105,9 @@ class Queries:
         self.to_srid = to_srid
         self.default_srid = default_srid
 
+    def readiness():
+        return 'SELECT 1;'
+    
     def kom_fylke_enkel(self, where=''):
         return """SELECT kommunenummer,
                          navn_pri_1 as kommunenavn,
