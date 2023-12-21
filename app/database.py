@@ -7,7 +7,7 @@ import psycopg2
 import config as cf
 
 
-logging = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DbConn():
@@ -21,7 +21,7 @@ class DbConn():
         except psycopg2.errors.TooManyConnections:
             abort(500, "Databasen opplever for mange tilkoblinger, vennligst vent litt.")
         except Exception as e:
-            logging.error(
+            logger.error(
                 "Exception under databaseconnection: {}".format(e.message))
             abort(500, "Noe gikk galt, prøv igjen senere")
 
@@ -38,8 +38,8 @@ class DbConn():
         """userInput is included here because of protection against sql-injection when
         the parameters are inserted as a tuple in the cur.execute-command.
         """
-        logging.debug('Query to execute: %s. With input: %s' %
-                      (query, userInput))
+        logger.debug('Query to execute: %s. With input: %s' %
+                     (query, userInput))
         if not isinstance(userInput, tuple):
             userInput = (userInput,)
         try:
@@ -48,14 +48,14 @@ class DbConn():
             else:
                 self.cur.execute(query)
         except Exception as e:
-            logging.error(
+            logger.error(
                 'Encountered exception when performing query: %s' % e)
             if "Cannot find SRID" in str(e):
                 abort(400, "Koordinatsystemet/SRID er ikke støttet.")
             else:
                 abort(500)
         result = self.cur.fetchall()
-        logging.debug('Query result: %s' % result)
+        logger.debug('Query result: %s' % result)
         if len(result) == 0:
             abort(404, "Ingen treff, sjekk parameterene.")
         return result
