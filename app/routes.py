@@ -575,12 +575,13 @@ def swagger_ui():
 metrics.register_default(
     metrics.counter(
         'flask_http_request_status_and_path', 'Request count by status and path',
-        labels={'status': lambda r: r.status_code, 'path': request.generalized_path, 'resource': request.path}
+        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
     )
 )
+
 metrics.register_default(
     metrics.gauge(
         'flask_http_request_time_gauge', 'Time used on requests',
-        labels={'path': request.generalized_path, 'resource': request.path, 'status': lambda r: r.status_code}
+        labels={'path': lambda: request.generalized_path, 'resource': lambda: request.path}
     )
 )
