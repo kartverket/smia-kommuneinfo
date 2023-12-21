@@ -40,13 +40,6 @@ class PrefixMiddleware(object):
 
 metrics = PrometheusMetrics(app)
 
-metrics.register_default(
-    metrics.counter(
-        'status_and_path', 'Request count by status and path',
-        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
-    )
-)
-
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=cf.basepath)
 
 @app.before_request
@@ -576,3 +569,11 @@ def openapi_json():
 @app.route('/index.html')
 def swagger_ui():
     return render_template('swagger-ui.html')
+
+
+metrics.register_default(
+    metrics.counter(
+        'status_and_path', 'Request count by status and path',
+        labels={'status': lambda r: r.status_code, 'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+    )
+)
