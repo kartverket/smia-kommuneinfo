@@ -284,6 +284,7 @@ def get_fylke_polygon(fylkesnummer):
     filterModel = filter_model(md.FylkerEnkelOmrade, filters)
     return return_jsonify_dump(filterModel, output, many=False)
 
+@app.route('/fylkerKommuner')
 @app.route('/fylkerkommuner')
 def fylker_kommuner_full():
     """Full info om alle fylker og alle kommuner
