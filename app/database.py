@@ -22,7 +22,7 @@ class DbConn():
             abort(500, "Databasen opplever for mange tilkoblinger, vennligst vent litt.")
         except Exception as e:
             logger.error(
-                "Exception under databaseconnection: {}".format(e.message))
+                "Exception under databaseconnection: {}".format(e))
             abort(500, "Noe gikk galt, prøv igjen senere")
 
     def perform_query_format_response(self, query, userInput=False):
@@ -107,7 +107,7 @@ class Queries:
 
     def readiness():
         return 'SELECT 1;'
-    
+
     def kom_fylke_enkel(self, where=''):
         return """SELECT kommunenummer,
                          navn_pri_1 as kommunenavn,
