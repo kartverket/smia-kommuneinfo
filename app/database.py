@@ -3,7 +3,6 @@ import logging
 import signal
 import sys
 from flask import abort
-import werkzeug
 import config as cf
 from psycopg2.pool import ThreadedConnectionPool as _ThreadedConnectionPool
 from threading import Semaphore
