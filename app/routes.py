@@ -527,7 +527,7 @@ def search_by_kommunenavn():
 
     out_srid = Validate().srid(request.args.get('utkoordsys'))
     user_search = Validate().search_string(request.args.get('knavn'))
-    search_with_psql_wildcard = user_search.replace('*', '_')
+    search_with_psql_wildcard = user_search.replace('*', '%')
     where_for_query = """   WHERE
                             LOWER(navn_pri_1) LIKE LOWER(%s) OR
                             LOWER(navn_pri_2) LIKE LOWER(%s) OR
