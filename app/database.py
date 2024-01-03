@@ -135,7 +135,6 @@ class DbConn():
         for row in query_result:
             tempDict = {}
             for index, data in enumerate(row):
-                print(cursor.description)
                 colName = cursor.description[index][0]
                 tempDict[colName] = data
             outList.append(tempDict)
