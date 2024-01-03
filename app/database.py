@@ -1,64 +1,112 @@
 
 import logging
-
+import signal
+import sys
 from flask import abort
-import psycopg2
-
 import config as cf
+from psycopg2.pool import ThreadedConnectionPool as _ThreadedConnectionPool
+from threading import Semaphore
 
 
 logger = logging.getLogger(__name__)
 
 
+# ThreadedConnectionPool doesn't have any blocking functionality for getconn(), when maxconn is exceeded 
+# https://stackoverflow.com/questions/48532301/python-postgres-psycopg2-threadedconnectionpool-exhausted/49366850#49366850
+# Also adding signal handling if Kubernetes kills a container
+class ThreadedConnectionPool(_ThreadedConnectionPool):
+    def __init__(self, minconn, maxconn, *args, **kwargs):
+        self._semaphore = Semaphore(maxconn)
+        super().__init__(minconn, maxconn, *args, **kwargs)
+        signal.signal(signal.SIGINT, self.handle_signal)
+        signal.signal(signal.SIGTERM, self.handle_signal)
+
+    def getconn(self, *args, **kwargs):
+        self._semaphore.acquire()
+        try:
+            return super().getconn(*args, **kwargs)
+        except:
+            self._semaphore.release()
+            raise
+    
+    def handle_signal(self, sig, frame):
+        exit_status = 0
+        logger.info("Recieved signal: {}. Closing all db-connection(s)".format(signal.Signals(sig).name))
+
+        try:
+            self.closeall()
+        except Exception as e:
+            logger.error(e)
+            exit_status = 1
+        sys.exit(exit_status)
+
+    def putconn(self, *args, **kwargs):
+        try:
+            super().putconn(*args, **kwargs)
+        finally:
+            self._semaphore.release()
+
+    def closeall(self):
+        return super().closeall()
+
+
 class DbConn():
     """Connect to the db, perform a query and format the response"""
+    pool = ThreadedConnectionPool(
+        minconn=2, maxconn=4,
+        dsn=cf.db_uri, user=cf.db_user, password=cf.db_password
+    )
 
-    def __init__(self):
+    def perform_query_format_response(self, query, userInput=False):
         try:
-            self.conn = psycopg2.connect(
-                dsn=cf.db_uri, user=cf.db_user, password=cf.db_password)
-            self.cur = self.conn.cursor()
-        except psycopg2.errors.TooManyConnections:
-            abort(500, "Databasen opplever for mange tilkoblinger, vennligst vent litt.")
+            connection = self.pool.getconn()
+            cursor = connection.cursor()
+            queryResult = self.perform_query(connection, cursor, query, userInput)
+            out = self.format_response(cursor, queryResult)
+            self.pool.putconn(connection)
+            return self.format_names(out)
         except Exception as e:
             logger.error(
                 "Exception under databaseconnection: {}".format(e))
-            abort(500, "Noe gikk galt, prøv igjen senere")
-
-    def perform_query_format_response(self, query, userInput=False):
-        queryResult = self.perform_query(query, userInput)
-        out = self.format_response(queryResult)
-        return self.format_names(out)
+            abort(500, "Noe gikk galt, prøv igjen senere")    
 
     def perform_query_get_response(self, query, userInput=False):
         queryResult = self.perform_query(query, userInput)
         return queryResult
 
-    def perform_query(self, query, userInput=False):
+    def abort_with_db_release(self, db_connection, status_code, message=None):
+        if db_connection is not None:
+            self.pool.putconn(db_connection)
+        abort(status_code, message)
+
+    def perform_query(self, connection, cursor, query, userInput=False):
         """userInput is included here because of protection against sql-injection when
         the parameters are inserted as a tuple in the cur.execute-command.
         """
+
         logger.debug('Query to execute: %s. With input: %s' %
-                     (query, userInput))
+                    (query, userInput))
+        
         if not isinstance(userInput, tuple):
             userInput = (userInput,)
         try:
             if userInput:
-                self.cur.execute(query, userInput)
+                cursor.execute(query, userInput)
             else:
-                self.cur.execute(query)
+                cursor.execute(query)
         except Exception as e:
             logger.error(
                 'Encountered exception when performing query: %s' % e)
             if "Cannot find SRID" in str(e):
-                abort(400, "Koordinatsystemet/SRID er ikke støttet.")
+                self.abort_with_db_release(connection, 400, "Koordinatsystemet/SRID er ikke støttet.")
             else:
-                abort(500)
-        result = self.cur.fetchall()
+                self.abort_with_db_release(connection, 500)
+        result = cursor.fetchall()
         logger.debug('Query result: %s' % result)
         if len(result) == 0:
-            abort(404, "Ingen treff, sjekk parameterene.")
+            self.abort_with_db_release(connection, 404, "Ingen treff, sjekk parameterene.")
         return result
+
 
     def format_names(self, inputNames):
         for x in inputNames:
@@ -81,22 +129,18 @@ class DbConn():
             x['gyldigeNavn'] = [navn1, navn2, navn3]
         return inputNames
 
-    def format_response(self, query_result):
+    def format_response(self, cursor, query_result):
         outList = []
+
         for row in query_result:
             tempDict = {}
             for index, data in enumerate(row):
-                colName = self.cur.description[index][0]
+                print(cursor.description)
+                colName = cursor.description[index][0]
                 tempDict[colName] = data
             outList.append(tempDict)
         return outList
 
-    def __del__(self):
-        """close connection if not already done"""
-        try:
-            self.conn.close()
-        except AttributeError:
-            return
 
 
 class Queries:
