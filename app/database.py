@@ -53,7 +53,7 @@ class ThreadedConnectionPool(_ThreadedConnectionPool):
 class DbConn():
     """Connect to the db, perform a query and format the response"""
     pool = ThreadedConnectionPool(
-        minconn=2, maxconn=4,
+        minconn=cf.min_db_connections, maxconn=cf.max_db_connections,
         dsn=cf.db_uri, user=cf.db_user, password=cf.db_password
     )
 

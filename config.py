@@ -12,3 +12,5 @@ basepath = "/kommuneinfo/v1"
 defSrid = 4258
 set_json_as_ascii = False
 locale_choice = 'no_NO.UTF-8'
+min_db_connections = 2
+max_db_connections = 6
