@@ -51,24 +51,28 @@ class ThreadedConnectionPool(_ThreadedConnectionPool):
 
 
 class DbConn():
-    """Connect to the db, perform a query and format the response"""
-    pool = ThreadedConnectionPool(
-        minconn=cf.min_db_connections, maxconn=cf.max_db_connections,
-        dsn=cf.db_uri, user=cf.db_user, password=cf.db_password
-    )
+    """Connect to the db, perform a query and format the response"""  
 
-    def perform_query_format_response(self, query, userInput=False):
+    pool = ThreadedConnectionPool(
+                minconn=cf.min_db_connections, maxconn=cf.max_db_connections,
+                dsn=cf.db_uri, user=cf.db_user, password=cf.db_password
+            )
+    
+    def get_db_connection(self):
         try:
-            connection = self.pool.getconn()
-            cursor = connection.cursor()
-            queryResult = self.perform_query(connection, cursor, query, userInput)
-            out = self.format_response(cursor, queryResult)
-            self.pool.putconn(connection)
-            return self.format_names(out)
+            return self.pool.getconn()
         except Exception as e:
             logger.error(
                 "Exception under databaseconnection: {}".format(e))
-            abort(500, "Noe gikk galt, prøv igjen senere")    
+            abort(500, "Noe gikk galt, prøv igjen senere")  
+
+    def perform_query_format_response(self, query, userInput=False):
+        connection = self.get_db_connection()
+        cursor = connection.cursor()
+        queryResult = self.perform_query(connection, cursor, query, userInput)
+        out = self.format_response(cursor, queryResult)
+        self.pool.putconn(connection)
+        return self.format_names(out)
 
     def perform_query_get_response(self, query, userInput=False):
         queryResult = self.perform_query(query, userInput)
