@@ -75,9 +75,12 @@ class DbConn():
         return self.format_names(out)
 
     def perform_query_get_response(self, query, userInput=False):
-        queryResult = self.perform_query(query, userInput)
+        connection = self.get_db_connection()
+        cursor = connection.cursor()
+        queryResult = self.perform_query(connection, cursor, query, userInput)
+        self.pool.putconn(connection)
         return queryResult
-
+    
     def abort_with_db_release(self, db_connection, status_code, message=None):
         if db_connection is not None:
             self.pool.putconn(db_connection)
