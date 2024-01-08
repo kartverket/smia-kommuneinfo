@@ -106,6 +106,8 @@ class DbConn():
                 'Encountered exception when performing query: %s' % e)
             if "Cannot find SRID" in str(e):
                 self.abort_with_db_release(connection, 400, "Koordinatsystemet/SRID er ikke støttet.")
+            elif "point outside of projection domain" in str(e).lower:
+                self.abort_with_db_release(connection, 400, "Punkt utenfor projeksjonsdomenet.")
             else:
                 self.abort_with_db_release(connection, 500)
         result = cursor.fetchall()
