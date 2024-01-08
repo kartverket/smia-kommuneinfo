@@ -1,8 +1,10 @@
-# REST-API over administrative-enheter datasettet.
+# REST-API For Administrative Enheter (kommuner, fylker)
 
-Bygd i Python med Flask, marshmallow og apispec. Baserer seg på materialized view som forenkler datastrukturen i administrative-enheter-modellen.
+Bygd i Python med Flask, marshmallow og apispec. Data er hentet fra NIBAS med en [import-jobb](https://github.com/kartverket/smia-kommuneinfo-import).
 
 ## Lokal utvikling
+
+Det er anbefalt å kjøre import-jobb mot lokal database først. Det krever at du har satt opp en lokal instans av NIBAS Backend + DB, og Kommuneinfo DB. Docker compose i import-jobb repo er nyttig hjelp her.
 
 1. Lag og aktiver et python virtual environment (https://python.land/virtual-environments/virtualenv).
    - `python -m venv venv`
@@ -36,4 +38,3 @@ Merk at testene ikke kjører opp en egen in-memory database eller liknende, og d
 
 - Tester som del av pipeline
 - Tester burde helst ikke være integrasjonstester med database
-- Ikke instansiere databaseconnection hver gang men bruke pooling
