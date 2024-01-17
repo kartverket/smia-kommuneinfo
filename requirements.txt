@@ -1,5 +1,5 @@
 apispec==6.3.*
-apispec-webframeworks==0.5.*
+apispec-webframeworks==1.0.*
 click==8.1.*
 Flask==3.0.*
 itsdangerous==2.1.*
