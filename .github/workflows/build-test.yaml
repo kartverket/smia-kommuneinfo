@@ -12,11 +12,11 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Build docker image and push
         id: build
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: false
