@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-TODO:
--Just do one query and join in the database.
-"""
 
 import locale
 import logging
@@ -228,8 +224,8 @@ def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
     ---
     get:
-        summary: Vis mer informasjon om et fylke, inkludert kommuner i fylket.
-        description: Vis mer informasjon om et fylke, inkludert kommuner i fylket.
+        summary: Vis mer informasjon om et fylke
+        description: Gir informasjon om avgrensingsboks, fylkesnummer, fylkesnavn og kommuner i fylket.
         parameters:
             - in: path
               schema: ParamsFylkesnummer
@@ -300,7 +296,7 @@ def fylker_kommuner_full():
     ---
     get:
         summary: Full informasjon om alle fylker og alle kommuner.
-        description: Full informasjon om alle fylker og alle kommuner.
+        description: Henter avgrensningsboks, nummer og navn for alle fylker og kommuner i fylket. Inkluderer informasjon for kommuner som fått i /kommuner/{kommunenummer}.
         parameters:
             - in: query
               schema: ParamsKomFylk
@@ -400,7 +396,7 @@ def get_kommune(kommunenummer):
     ---
     get:
         summary: Full informasjon om spesifikk kommune
-        description: Full informasjon om spesifikk kommune
+        description: Gir informasjon om avgrensingsboks, kommunenummer, kommunenavn, fylket kommunen er i, samt noe tilleggsinformasjon om kommunen.
         parameters:
             - in: path
               schema: ParamsKommunenummer
