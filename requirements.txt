@@ -1,11 +1,11 @@
-apispec==6.3.*
 apispec-webframeworks==1.0.*
+apispec==6.5.*
 click==8.1.*
 Flask==3.0.*
 itsdangerous==2.1.*
 Jinja2==3.1.*
 MarkupSafe==2.1.*
-marshmallow==3.20.*
+marshmallow==3.21.*
 psycopg2
 PyYAML==6.0.*
 Werkzeug==3.0.*
