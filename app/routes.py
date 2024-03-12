@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-TODO:
--Just do one query and join in the database.
-"""
 
 import locale
 import logging
@@ -206,9 +202,11 @@ def get_fylker():
         responses:
             200:
                 description: OK
-                schema: 
-                    type: array
-                    items: FylkerEnkel
+                content:
+                    application/json:
+                        schema: 
+                            type: array
+                            items: FylkerEnkel
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
@@ -226,8 +224,8 @@ def get_kommuner_in_fylke(fylkesnummer):
     """Vis mer informasjon om et fylke, inkludert kommuner i fylket.
     ---
     get:
-        summary: Vis mer informasjon om et fylke, inkludert kommuner i fylket.
-        description: Vis mer informasjon om et fylke, inkludert kommuner i fylket.
+        summary: Vis mer informasjon om et fylke
+        description: Gir informasjon om avgrensingsboks, fylkesnummer, fylkesnavn og kommuner i fylket.
         parameters:
             - in: path
               schema: ParamsFylkesnummer
@@ -236,7 +234,9 @@ def get_kommuner_in_fylke(fylkesnummer):
         responses:
             200:
                 description: OK
-                schema: FylkerKommunerEnkel
+                content:
+                    application/json:
+                        schema: FylkerKommunerEnkel
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
@@ -273,7 +273,9 @@ def get_fylke_polygon(fylkesnummer):
         responses:
             200:
                 description: OK
-                schema: FylkerEnkelOmrade
+                content:
+                    application/json:
+                        schema: FylkerEnkelOmrade
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
@@ -294,16 +296,18 @@ def fylker_kommuner_full():
     ---
     get:
         summary: Full informasjon om alle fylker og alle kommuner.
-        description: Full informasjon om alle fylker og alle kommuner.
+        description: Henter avgrensningsboks, nummer og navn for alle fylker og kommuner i fylket. Inkluderer informasjon for kommuner som fått i /kommuner/{kommunenummer}.
         parameters:
             - in: query
               schema: ParamsKomFylk
         responses:
             200:
                 description: OK
-                schema: 
-                    type: array
-                    items: FylkerKommunerFull
+                content:
+                    application/json:
+                        schema: 
+                            type: array
+                            items: FylkerKommunerFull
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsKomFylk())
@@ -341,9 +345,11 @@ def get_kommuner():
         responses:
             200:
                 description: OK
-                schema: 
-                    type: array
-                    items: KomEnkelNorskNavn
+                content:
+                    application/json:
+                        schema: 
+                            type: array
+                            items: KomEnkelNorskNavn
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
@@ -369,7 +375,9 @@ def get_kommuner_illustrasjonskart():
         responses:
             200:
                 description: OK
-                schema: geoJsonFeatureCollection
+                content:
+                    application/json:
+                        schema: geoJsonFeatureCollection
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsSridOut())
@@ -388,7 +396,7 @@ def get_kommune(kommunenummer):
     ---
     get:
         summary: Full informasjon om spesifikk kommune
-        description: Full informasjon om spesifikk kommune
+        description: Gir informasjon om avgrensingsboks, kommunenummer, kommunenavn, fylket kommunen er i, samt noe tilleggsinformasjon om kommunen.
         parameters:
             - in: path
               schema: ParamsKommunenummer
@@ -397,7 +405,9 @@ def get_kommune(kommunenummer):
         responses:
             200:
                 description: OK
-                schema: KomFull
+                content:
+                    application/json:
+                        schema: KomFull
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
@@ -427,9 +437,11 @@ def get_neighbouring_kommune(kommunenummer):
         responses:
             200:
                 description: OK
-                schema:
-                    type: array
-                    items: KomEnkelNorskNavn
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items: KomEnkelNorskNavn
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandard())
@@ -458,7 +470,9 @@ def get_kommune_polygon(kommunenummer):
         responses:
             200:
                 description: OK
-                schema: KomEnkelOmrade
+                content:
+                    application/json:
+                        schema: KomEnkelOmrade
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
@@ -486,7 +500,9 @@ def get_kommune_for_point():
         responses:
             200:
                 description: OK
-                schema: KommuneFylkeEnkel
+                content:
+                    application/json:
+                        schema: KommuneFylkeEnkel
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsPunktSok())
@@ -517,7 +533,9 @@ def search_by_kommunenavn():
         responses:
             200:
                 description: OK
-                schema: NavnSokKommune
+                content:
+                    application/json:
+                        schema: NavnSokKommune
             404:
                 description: Kunne ikke finne kommunen du søkte etter
     """
@@ -574,12 +592,14 @@ def openapi_json():
 def swagger_ui():
     return render_template('swagger-ui.html')
 
+
 @app.route('/healthx')
 def liveness():
     response = make_response()
     response.status_code = 200
     return response
-    
+
+
 @app.route('/healthz')
 def readiness():
     response = make_response()
@@ -588,6 +608,7 @@ def readiness():
     else:
         response.status_code = 500
     return response
+
 
 metrics.register_default(
     metrics.counter(
@@ -600,6 +621,7 @@ metrics.register_default(
 metrics.register_default(
     metrics.gauge(
         'flask_http_request_time_gauge', 'Time used on requests',
-        labels={'path': lambda: request.generalized_path, 'resource': lambda: request.path}
+        labels={'path': lambda: request.generalized_path,
+                'resource': lambda: request.path}
     )
 )
