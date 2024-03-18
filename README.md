@@ -10,7 +10,6 @@ Det er anbefalt å kjøre import-jobb mot lokal database først. Det krever at d
    - `python -m venv venv`
 2. Aktiver virtual environment. Hvordan du gjør det kommer an på om du er i cmd shell eller i et \*nix-shell:
    - cmd shell: `venv\Scripts\activate.bat`
-   - \*nix-shell: `source venv\Scripts\activate`
    - MacOs / Linux: `source venv/bin/activate`
 3. Installer avhengigheter med pip
    - Alle avhengigheter (for å kunne kjøre tester lokalt): `pip install -r dev_requirements.txt`
