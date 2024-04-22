@@ -1,0 +1,58 @@
+# nonk8s
+apiVersion: "backstage.io/v1alpha1"
+kind: "Component"
+metadata:
+  name: "smia-kommuneinfo"
+  tags:
+  - "public"
+spec:
+  type: "service"
+  lifecycle: "production"
+  owner: "smia"
+  system: "kommuneinfo-api"
+  providesApis:
+  - "smia-kommuneinfo-api"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "Group"
+metadata:
+  name: "security_champion_smia-kommuneinfo"
+  title: "Security Champion smia-kommuneinfo"
+spec:
+  type: "security_champion"
+  parent: "eiendom_security_champions"
+  members:
+  - "etse"
+  children:
+  - "resource:smia-kommuneinfo"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "Resource"
+metadata:
+  name: "smia-kommuneinfo"
+  links:
+  - url: "https://github.com/kartverket/smia-kommuneinfo"
+    title: "smia-kommuneinfo på GitHub"
+spec:
+  type: "repo"
+  owner: "security_champion_smia-kommuneinfo"
+  system: "kommuneinfo-api"
+  dependencyOf:
+  - "component:smia-kommuneinfo"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "API"
+metadata:
+  name: "smia-kommuneinfo-api"
+  tags:
+  - "public"
+spec:
+  type: "openapi"
+  lifecycle: "production"
+  owner: "smia"
+  system: "kommuneinfo-api"
+  definition: |
+    openapi: "3.0.0"
+    info:
+        title: smia-kommuneinfo API
+    paths:
