@@ -22,7 +22,7 @@ spec:
   type: "security_champion"
   parent: "eiendom_security_champions"
   members:
-  - "etse"
+  - "AleksanderWK"
   children:
   - "resource:smia-kommuneinfo"
 ---
@@ -36,7 +36,6 @@ metadata:
 spec:
   type: "repo"
   owner: "security_champion_smia-kommuneinfo"
-  system: "kommuneinfo-api"
   dependencyOf:
   - "component:smia-kommuneinfo"
 ---
@@ -50,7 +49,6 @@ spec:
   type: "openapi"
   lifecycle: "production"
   owner: "smia"
-  system: "kommuneinfo-api"
   definition: |
     openapi: "3.0.0"
     info:
