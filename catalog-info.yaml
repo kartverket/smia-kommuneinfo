@@ -14,32 +14,6 @@ spec:
   - "smia-kommuneinfo-api"
 ---
 apiVersion: "backstage.io/v1alpha1"
-kind: "Group"
-metadata:
-  name: "security_champion_smia-kommuneinfo"
-  title: "Security Champion smia-kommuneinfo"
-spec:
-  type: "security_champion"
-  parent: "eiendom_security_champions"
-  members:
-  - "AleksanderWK"
-  children:
-  - "resource:smia-kommuneinfo"
----
-apiVersion: "backstage.io/v1alpha1"
-kind: "Resource"
-metadata:
-  name: "smia-kommuneinfo"
-  links:
-  - url: "https://github.com/kartverket/smia-kommuneinfo"
-    title: "smia-kommuneinfo på GitHub"
-spec:
-  type: "repo"
-  owner: "security_champion_smia-kommuneinfo"
-  dependencyOf:
-  - "component:smia-kommuneinfo"
----
-apiVersion: "backstage.io/v1alpha1"
 kind: "API"
 metadata:
   name: "smia-kommuneinfo-api"
