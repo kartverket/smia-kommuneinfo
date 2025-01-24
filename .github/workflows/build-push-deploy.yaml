@@ -2,6 +2,8 @@ name: Build, push and deploy to ArgoCD
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 env:
   DOCKER_REGISTRY: ghcr.io
@@ -64,15 +66,3 @@ jobs:
         with:
           allow_severity_level: critical
           image_url: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }}
-
-  deploy-argo:
-    permissions:
-      id-token: write
-    needs: build
-    uses: kartverket/smia-apps/.github/workflows/release-app-octo-sts.yml@main
-    with:
-      application: kommuneinfo
-      version: ${{ needs.build.outputs.version }}
-      namespace: "smia-tjenester-main"
-      deploy_dev: true
-      identity: restapi
