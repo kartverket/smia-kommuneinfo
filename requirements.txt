@@ -8,7 +8,7 @@ MarkupSafe==3.0.*
 marshmallow==3.26.*
 psycopg2
 PyYAML==6.0.*
-Werkzeug==3.0.*
+Werkzeug==3.1.*
 gunicorn==23.0.0
 JSON-log-formatter==1.1
 prometheus-flask-exporter==0.23.*
