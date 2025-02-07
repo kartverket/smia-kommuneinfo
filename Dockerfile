@@ -11,7 +11,10 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Needed for psycopg2
-RUN apk add build-base postgresql-dev --no-cache
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache build-base postgresql-dev && \
+    rm -rf /var/cache/apk/*
 
 RUN pip3 install -r requirements.txt
 
