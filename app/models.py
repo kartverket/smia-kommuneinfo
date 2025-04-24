@@ -36,7 +36,8 @@ class NavnFull(Schema):
 
 class KomEnkel(Schema):
     kommunenummer = fields.Str(
-        description='Nummerering av kommuner. Tekstverdi som må bestå av 4 tall. 0301 er for eksempel gyldig, mens 301 er ikke gyldig.')
+        metadata={'description': 'Nummerering av kommuner. Tekstverdi som må bestå av 4 tall. 0301 er for eksempel gyldig, mens 301 er ikke gyldig.'}
+    )
     kommunenavn = fields.Str()
 
 
@@ -61,8 +62,8 @@ class geoJsonFeatureCollection(Schema):
 
 class FylkerEnkel(Schema):
     fylkesnummer = fields.Str(
-        description='Nummerering av fylke. Tekstverdi som må bestå av 2 tall. 03 er for eksempel gyldig, mens 3 er ikke gyldig.')
-    fylkesnavn = fields.Str(description='Navn (norsk) på et fylke')
+        metadata={'description': 'Nummerering av fylke. Tekstverdi som må bestå av 2 tall. 03 er for eksempel gyldig, mens 3 er ikke gyldig.'})
+    fylkesnavn = fields.Str(metadata={'description': 'Navn (norsk) på et fylke'})
 
 
 class FylkerEnkelOmrade(FylkerEnkel):
@@ -99,23 +100,23 @@ class NavnSokKommune(Schema):
 
 class ParamsFilter(Schema):
     filtrer = fields.Str(
-        description='Kommaseparert liste med de objektene du ønsker å få returnert. For å hente ut underobjekter bruk "."-notasjon, f.eks.: &filtrer=kommuner.kommunenummer,fylkesnavn')
+        metadata={'description': 'Kommaseparert liste med de objektene du ønsker å få returnert. For å hente ut underobjekter bruk "."-notasjon, f.eks.: &filtrer=kommuner.kommunenummer,fylkesnavn'})
 
 
 class ParamsSort(Schema):
-    sorter = fields.Str(description='Sorter resultat etter felt.')
+    sorter = fields.Str(metadata={'description': 'Sorter resultat etter felt.'})
 
 
 class ParamsSridOut(Schema):
     utkoordsys = fields.Integer(
-        description='Angi det koordinatsystemet som du ønsker at geometrien i returen skal transformeres til. Standard er 4258.')
+        metadata={'description': 'Angi det koordinatsystemet som du ønsker at geometrien i returen skal transformeres til. Standard er 4258.'})
 
 
 class ParamsSorterKomFylk(Schema):
     sorterkommuner = fields.Str(
-        description='Sorter listen med kommuner etter felt.')
+        metadata={'description': 'Sorter listen med kommuner etter felt.'})
     sorterfylker = fields.Str(
-        description='Sorter listen med fylker etter felt.')
+        metadata={'description': 'Sorter listen med fylker etter felt.'})
 
 
 class ParamsStandard(ParamsFilter, ParamsSort):
@@ -124,18 +125,18 @@ class ParamsStandard(ParamsFilter, ParamsSort):
 
 class ParamsFylkesnummer(Schema):
     fylkesnummer = fields.Str(
-        description='Fylkesnummer bestående av 2 tegn, med ledende null om nødvendig.', required=True)
+        metadata={'description': 'Fylkesnummer bestående av 2 tegn, med ledende null om nødvendig.', 'required': True})
 
 
 class ParamsKommunenummer(Schema):
     kommunenummer = fields.Str(
-        description='kommunenummer bestående av 4 tegn, med ledende null om nødvendig.', required=True)
+        metadata={'description': 'kommunenummer bestående av 4 tegn, med ledende null om nødvendig.', 'required': True})
 
 
 class ParamsNavnSok(ParamsStandard, ParamsSridOut):
     # \ will not show in the OpenAPI spec, removing from description to avoid extra comma
     knavn = fields.Str(
-        required=True, description="Kommunenavnet du ønsker å søke etter. Wildcard (*) kan benyttes i søket. Spesialtegnene \", \', ;, /, og = kan ikke brukes")
+        required=True, metadata={'description': "Kommunenavnet du ønsker å søke etter. Wildcard (*) kan benyttes i søket. Spesialtegnene \", \', ;, /, og = kan ikke brukes"})
 
 
 class ParamsKomFylk(ParamsFilter, ParamsSridOut, ParamsSorterKomFylk):
@@ -143,10 +144,10 @@ class ParamsKomFylk(ParamsFilter, ParamsSridOut, ParamsSorterKomFylk):
 
 
 class ParamsPunktSok(ParamsFilter):
-    nord = fields.Float(required=True, description="nord/latitude-koordinaten")
-    ost = fields.Float(required=True, description="øst/longitude-koordinaten")
+    nord = fields.Float(required=True, metadata={'description': "nord/latitude-koordinaten"})
+    ost = fields.Float(required=True, metadata={'description': "øst/longitude-koordinaten"})
     koordsys = fields.Integer(
-        required=True, description="Koordinatsystemet til koordinatene du søker med. Angis som en SRID, for eksempel 4258 eller 25833.")
+        required=True, metadata={'description': "Koordinatsystemet til koordinatene du søker med. Angis som en SRID, for eksempel 4258 eller 25833."})
 
 
 class ParamsStandardKoordsys(ParamsFilter, ParamsSridOut):
