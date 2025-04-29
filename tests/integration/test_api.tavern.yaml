@@ -183,7 +183,7 @@ strict:
 stages:
   - name: get
     request:
-      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/5426"
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/kommuner/5540"
       params:
         utkoordsys: 4258
       method: GET
@@ -193,19 +193,14 @@ stages:
       status_code: 200
       json:
         avgrensningsboks:
-          coordinates:
-            - !anylist
+          coordinates: !anything
           crs:
             properties:
               name: "EPSG:4258"
             type: "name"
           type: "Polygon"
-        kommunenavn: "Gáivuotna"
-        kommunenavnNorsk: "Kåfjord"
-        kommunenummer: "5426"
-        fylkesnummer: "54"
-        fylkesnavn: "Troms og Finnmark"
-        samiskForvaltningsomrade: true
+        fylkesnavn: "Troms"
+        fylkesnummer: "55"
         gyldigeNavn:
           - navn: "Gáivuotna"
             prioritet: 1
@@ -216,14 +211,17 @@ stages:
           - navn: "Kaivuono"
             prioritet: 3
             sprak: "Kven Finnish"
+        kommunenavn: "Gáivuotna"
+        kommunenavnNorsk: "Kåfjord"
+        kommunenummer: "5540"
         punktIOmrade:
-          coordinates:
-            !anylist
-          type: "Point"
+          coordinates: !anything
           crs:
             properties:
               name: "EPSG:4258"
             type: "name"
+          type: "Point"
+        samiskForvaltningsomrade: true
 
 
 ---
