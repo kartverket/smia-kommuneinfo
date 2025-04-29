@@ -33,6 +33,34 @@ Det er anbefalt å kjøre import-jobb mot lokal database først. Det krever at d
 
 Merk at testene ikke kjører opp en egen in-memory database eller liknende, og dermed må du ha databasen kjørende lokalt.
 
+### Kjøre tester mot deployerte miljøer (med skript)
+
+Etter å ha installert dev-dependencies (`pip install -r dev_requirements.txt`) kan du bruke `run_tests.sh`-skriptet for å kjøre Tavern-integrasjonstestene mot de ulike deployerte miljøene.
+
+NB: Du må kanskje gjøre skriptet kjørbart én gang først:
+```bash
+chmod +x run_tests.sh
+```
+
+Skriptet tar miljøet du vil teste mot som argument (`dev`, `test`, eller `prod`).
+
+**Eksempler:**
+
+*   Kjør tester mot **dev**-miljøet:
+    ```bash
+    ./run_tests.sh dev
+    ```
+*   Kjør tester mot **test**-miljøet:
+    ```bash
+    ./run_tests.sh test
+    ```
+*   Kjør tester mot **prod**-miljøet:
+    ```bash
+    ./run_tests.sh prod
+    ```
+
+Skriptet setter automatisk `TAVERN_TEST_URL` basert på valgt miljø og kjører `tavern-ci`.
+
 ### TODO
 
 - Tester som del av pipeline
