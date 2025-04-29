@@ -69,34 +69,63 @@ stages:
 
 ---
 
-test_name: Hent ut et enkelt fylke, sorter kommuner
+test_name: Hent ut et enkelt fylke, filtrer kommunenummer
 
 strict:
   - headers:off
-  - json:off
+  - json:on
 
 stages:
   - name: get
     request:
       url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker/50"
       params:
-        sorter: kommunenummer
+        filtrer: kommuner.kommunenummer
       method: GET
       headers:
         content-type: application/json
     response:
       status_code: 200
       json:
-        avgrensningsboks:
-          crs:
-            properties:
-              name: "EPSG:4258"
-        fylkesnavn: "Trøndelag"
-        fylkesnummer: "50"
         kommuner:
+          - kommunenummer: "5045"
+          - kommunenummer: "5035"
+          - kommunenummer: "5026"
+          - kommunenummer: "5033"
+          - kommunenummer: "5044"
+          - kommunenummer: "5031"
+          - kommunenummer: "5036"
+          - kommunenummer: "5020"
+          - kommunenummer: "5037"
+          - kommunenummer: "5029"
+          - kommunenummer: "5027"
+          - kommunenummer: "5034"
+          - kommunenummer: "5060"
+          - kommunenummer: "5058"
+          - kommunenummer: "5021"
+          - kommunenummer: "5022"
+          - kommunenummer: "5032"
+          - kommunenummer: "5052"
+          - kommunenummer: "5006"
+          - kommunenummer: "5057"
+          - kommunenummer: "5038"
+          - kommunenummer: "5059"
+          - kommunenummer: "5014"
+          - kommunenummer: "5061"
+          - kommunenummer: "5053"
+          - kommunenummer: "5047"
+          - kommunenummer: "5046"
+          - kommunenummer: "5055"
+          - kommunenummer: "5049"
+          - kommunenummer: "5042"
+          - kommunenummer: "5056"
+          - kommunenummer: "5054"
+          - kommunenummer: "5028"
+          - kommunenummer: "5041"
+          - kommunenummer: "5025"
+          - kommunenummer: "5043"
+          - kommunenummer: "5007"
           - kommunenummer: "5001"
-            kommunenavn: "Trondheim"
-
 
 ---
 
