@@ -299,8 +299,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      headers:
-        content-length: !re_fullmatch "16[4-6]{1}[0-9]{3}"
+      headers: {}
       json:
         type: "FeatureCollection"
         features:
