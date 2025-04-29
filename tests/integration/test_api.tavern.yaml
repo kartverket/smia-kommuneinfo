@@ -60,7 +60,7 @@ strict:
 stages:
   - name: get
     request:
-      url: "{tavern.env_vars.TAVERN_TEST_URL}"
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/"
       method: GET
       headers:
         content-type: application/json
