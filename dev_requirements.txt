@@ -1,5 +1,5 @@
 -r requirements.txt
 pytest==9.*
-tavern==3.3.*
+tavern==3.4.*
 pytest-mock==3.*
 urllib3==2.*
