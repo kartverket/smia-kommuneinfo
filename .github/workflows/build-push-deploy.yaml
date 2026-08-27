@@ -16,7 +16,8 @@ jobs:
       actions: read
 
     outputs:
-      version: ${{ steps.set_output.outputs.version }}
+      version: ${{ steps.tag_version.outputs.new_tag }}
+      digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout Repo
@@ -47,7 +48,6 @@ jobs:
         id: set_output
         run: |
           echo "Full Image URL: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
-          echo "version=${{ steps.tag_version.outputs.new_tag }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
 
   pharos:
     name: Run Pharos security scan
@@ -63,16 +63,17 @@ jobs:
         uses: kartverket/pharos@v0.6.4
         with:
           allow_severity_level: critical
-          image_url: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }}
+          image_url: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }}@${{ needs.build.outputs.digest }}
 
   deploy-argo:
     permissions:
       id-token: write
     needs: build
-    uses: kartverket/smia-apps/.github/workflows/release-app-octo-sts.yml@main
+    uses: kartverket/smia-workflows/.github/workflows/deploy-app.yml@main
     with:
       application: kommuneinfo
       version: ${{ needs.build.outputs.version }}
+      digest: ${{ needs.build.outputs.digest }}
+      environment: dev
       namespace: "smia-tjenester-main"
-      deploy_dev: true
       identity: restapi
