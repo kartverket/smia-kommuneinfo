@@ -69,6 +69,7 @@ jobs:
   deploy-argo:
     permissions:
       id-token: write
+      contents: read
     needs: build
     uses: kartverket/smia-workflows/.github/workflows/deploy-app.yml@main
     with:
