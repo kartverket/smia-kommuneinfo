@@ -1,0 +1,13 @@
+[deny]
+paths = [
+    ".env",
+    ".env.local",
+    "**/*.pem",
+    "**/secrets/**",
+    "application-local.yaml",
+]
+
+[propose]
+gh_guard = true
+git_push_prevention = true
+
