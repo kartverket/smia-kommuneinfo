@@ -1,0 +1,6 @@
+- targets:
+    - https://api.kartverket.no/kommuneinfo/v1/healthz
+  labels:
+    team: smia
+    env: prod
+    service: smia-kommuneinfo
