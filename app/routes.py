@@ -4,7 +4,7 @@ import locale
 import logging
 import re
 
-from marshmallow import ValidationError
+from marshmallow import ValidationError, fields
 
 from flask import request, jsonify, abort, make_response, render_template
 from prometheus_flask_exporter import PrometheusMetrics
@@ -135,6 +135,18 @@ def combine_all_fylker_kommuner(fylkDict, komDict):
 
 def filter_model(modelMa, filterDict):
     try:
+        model = modelMa()
+        for field_path in filterDict.get('only', []):
+            path_parts = field_path.split('.')
+            current_model = model
+            for index, field_name in enumerate(path_parts):
+                field = current_model.fields.get(field_name)
+                if field is None:
+                    raise ValueError(field_path)
+                if index < len(path_parts) - 1:
+                    if not isinstance(field, fields.Nested):
+                        raise ValueError(field_path)
+                    current_model = field.schema
         return modelMa(**filterDict)
     except (ValueError, KeyError) as e:
         logger.debug(e)
@@ -247,6 +259,8 @@ def get_kommuner_in_fylke(fylkesnummer):
                 content:
                     application/json:
                         schema: FylkerKommunerEnkel
+            400:
+                description: Feil i filtreringsparameter
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsStandardKoordsys())
@@ -318,6 +332,8 @@ def fylker_kommuner_full():
                         schema: 
                             type: array
                             items: FylkerKommunerFull
+            400:
+                description: Feil i filtreringsparameter
     """
     validParams = deserialize_input_params(request.args.to_dict(),
                                            md.ParamsKomFylk())
@@ -546,6 +562,8 @@ def search_by_kommunenavn():
                 content:
                     application/json:
                         schema: NavnSokKommune
+            400:
+                description: Feil i filtreringsparameter
             404:
                 description: Kunne ikke finne kommunen du søkte etter
     """

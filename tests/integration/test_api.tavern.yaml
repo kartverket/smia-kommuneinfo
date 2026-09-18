@@ -386,3 +386,45 @@ stages:
           type: "MultiPolygon"
         fylkesnavn: "Oslo"
 
+---
+
+test_name: Ugyldig underfelt i filtrering av enkelt fylke gir 400
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylker/50"
+      params:
+        filtrer: kommuner.kommunenumme
+      method: GET
+    response:
+      status_code: 400
+
+---
+
+test_name: Ugyldig underfelt i filtrering av fylkerkommuner gir 400
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/fylkerkommuner"
+      params:
+        filtrer: kommuner.kommunenumme
+      method: GET
+    response:
+      status_code: 400
+
+---
+
+test_name: Ugyldig underfelt i filtrering av søk gir 400
+
+stages:
+  - name: get
+    request:
+      url: "{tavern.env_vars.TAVERN_TEST_URL}/sok"
+      params:
+        knavn: oslo
+        filtrer: kommuner.kommunenumme
+      method: GET
+    response:
+      status_code: 400
