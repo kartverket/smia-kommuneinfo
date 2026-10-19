@@ -16,4 +16,4 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
-    uses: kartverket/github-workflows/.github/workflows/synthetic-monitoring.yaml@c3fabaec85ee208e5f10782ac71b5a82b30c6bb3 # v4.13.2
+    uses: kartverket/github-workflows/.github/workflows/synthetic-monitoring.yaml@e06d2109e748b3e8a29ed66e0fc0eaea5bff7d39 # v5.1.0
